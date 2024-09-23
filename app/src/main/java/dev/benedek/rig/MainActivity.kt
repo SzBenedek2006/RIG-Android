@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package dev.benedek.rig
 
 import android.os.Bundle
@@ -7,12 +9,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +37,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             RIGTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = {
+                        Surface(tonalElevation = 10.dp) {
+                            TopAppBar(
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.background,
+                                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                                ),
+                                title = {
+                                    Text("RIG-Android")
+                                },
+                            )
+                        }
+                    },
+                ) { innerPadding ->
                     RigUi(
                         name = "RIG",
                         modifier = Modifier.padding(innerPadding)
@@ -38,6 +62,26 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+@Composable
+fun SmallTopAppBarExample() {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                title = {
+                    Text("RIG for android")
+                }
+            )
+        },
+    ) { innerPadding ->
+        ScrollContent(innerPadding)
+    }
+}
+
 
 @Composable
 fun RigUi(name: String, modifier: Modifier = Modifier) {
@@ -64,10 +108,25 @@ fun RigUi(name: String, modifier: Modifier = Modifier) {
                 fontSize = 16.sp,
             )
         }
-        
     }
-
 }
+
+@Composable
+fun ScrollContent(innerPadding: PaddingValues) {
+    val range = 1..100
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = innerPadding,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(range.count()) { index ->
+            Text(text = "- List item number ${index + 1}")
+        }
+    }
+}
+
 
 @Preview(showBackground = true, showSystemUi = true, name = "Main screen")
 @Composable
