@@ -10,10 +10,11 @@ import kotlin.random.Random
 
 class RIG(private val context: Context) {
     fun randomImageGenerator(): String {
-        val outputPath = context.filesDir.absolutePath + "image.png"
+        val firstTime = System.currentTimeMillis()
 
-        val width = 10
-        val height = 10
+        val outputPath = context.filesDir.absolutePath + "image.png"
+        val width = 1000
+        val height = 1000
         val count = 1
         var image: Image
         val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) // Alpha is first
@@ -33,7 +34,13 @@ class RIG(private val context: Context) {
 
 
         val imagePath = saveBitmapAsPng(bitmap, outputPath)
-        return imagePath // Return the path of the saved image
+
+
+
+        val secondTime = System.currentTimeMillis()
+        val runtime = secondTime - firstTime
+
+        return "Generated image at:\n" + imagePath + "\nin $runtime ms." // Return the path of the saved image
     }
 
     private fun saveBitmapAsPng(bitmap: Bitmap, outputPath: String): String {
