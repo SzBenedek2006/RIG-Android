@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val rig = RIG(this)
+        val savedImagePath = rig.randomImageGenerator()
         setContent {
             RIGTheme {
                 Scaffold(
@@ -54,9 +57,10 @@ class MainActivity : ComponentActivity() {
                     },
                 ) { innerPadding ->
                     RigUi(
-                        name = "RIG",
+                        path = savedImagePath,
                         modifier = Modifier.padding(innerPadding)
                     )
+
                 }
             }
         }
@@ -84,7 +88,7 @@ fun SmallTopAppBarExample() {
 
 
 @Composable
-fun RigUi(name: String, modifier: Modifier = Modifier) {
+fun RigUi(path: String, modifier: Modifier = Modifier) {
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -97,7 +101,7 @@ fun RigUi(name: String, modifier: Modifier = Modifier) {
             Text(
                 modifier = modifier
                     .padding(top = 32.dp),
-                text = "Say hello to $name!",
+                text = "Say hello to RIG!",
                 //lineHeight = 8.sp,
                 fontSize = 36.sp
             )
@@ -105,8 +109,15 @@ fun RigUi(name: String, modifier: Modifier = Modifier) {
                 text = "Nice to see you here!",
                 modifier = modifier,
                 //lineHeight = 8.sp,
-                fontSize = 16.sp,
+                fontSize = 16.sp
             )
+            Text(
+                text = "Generated path: $path",
+                modifier = modifier,
+                //lineHeight = 8.sp,
+                fontSize = 16.sp
+            )
+
         }
     }
 }
@@ -134,7 +145,7 @@ fun GreetingPreview() {
         RIGTheme {
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                 RigUi(
-                    name = "RIG",
+                    path = "RIG",
                     modifier = Modifier.padding(innerPadding)
                 )
             }
