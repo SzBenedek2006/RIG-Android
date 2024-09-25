@@ -2,6 +2,8 @@
 
 package dev.benedek.rig
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,6 +28,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,8 +39,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val firstTime = System.currentTimeMillis()
         val rig = RIG(this)
         val savedImagePath = rig.randomImageGenerator()
+        val secondTime = System.currentTimeMillis()
+        val runtime = secondTime - firstTime
         setContent {
             RIGTheme {
                 Scaffold(
@@ -117,8 +123,25 @@ fun RigUi(path: String, modifier: Modifier = Modifier) {
                 //lineHeight = 8.sp,
                 fontSize = 16.sp
             )
-
+            val bitmap = loadBitmap(path)
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.size(200.dp) // Adjust size as needed
+                )
+            } else {
+                Text(text = "Failed to load image", fontSize = 16.sp)
+            }
         }
+    }
+}
+fun loadBitmap(path: String): Bitmap? {
+    return try {
+        BitmapFactory.decodeFile(path)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }
 
@@ -142,12 +165,28 @@ fun ScrollContent(innerPadding: PaddingValues) {
 @Preview(showBackground = true, showSystemUi = true, name = "Main screen")
 @Composable
 fun GreetingPreview() {
-        RIGTheme {
-            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                RigUi(
-                    path = "RIG",
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
+    RIGTheme {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                Surface(tonalElevation = 10.dp) {
+                    TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            titleContentColor = MaterialTheme.colorScheme.onBackground,
+                        ),
+                        title = {
+                            Text("RIG-Android")
+                        },
+                    )
+                }
+            },
+        ) { innerPadding ->
+            RigUi(
+                path = "Image path",
+                modifier = Modifier.padding(innerPadding)
+            )
+
         }
+    }
 }

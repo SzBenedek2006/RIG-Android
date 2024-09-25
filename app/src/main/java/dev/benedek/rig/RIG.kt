@@ -10,13 +10,19 @@ import kotlin.random.Random
 
 class RIG(private val context: Context) {
     fun randomImageGenerator(): String {
-        val firstTime = System.currentTimeMillis()
 
-        val outputPath = context.filesDir.absolutePath + "image.png"
+
+        val outputPath = context.filesDir.absolutePath + "/image.png"
         val width = 1000
         val height = 1000
         val count = 1
-        var image: Image
+
+        val imagePath = generatePngAlpha(width, height, outputPath)
+
+        return imagePath // Return the path of the saved image
+    }
+
+    fun generatePngAlpha(width: Int, height: Int, outputPath: String): String {
         val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) // Alpha is first
 
         for (x in 0 until width) {
@@ -31,17 +37,27 @@ class RIG(private val context: Context) {
                 bitmap.setPixel(x, y, randomColor)
             }
         }
-
-
-        val imagePath = saveBitmapAsPng(bitmap, outputPath)
-
-
-
-        val secondTime = System.currentTimeMillis()
-        val runtime = secondTime - firstTime
-
-        return "Generated image at:\n" + imagePath + "\nin $runtime ms." // Return the path of the saved image
+        return saveBitmapAsPng(bitmap, outputPath)
     }
+
+    fun generatePng(width: Int, height: Int, outputPath: String): String {
+        val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) // Alpha is first
+
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                // Generate random colors (without alpha for RGB_565)
+                val randomColor = Color.rgb(
+                    Random.nextInt(256), // Red
+                    Random.nextInt(256), // Green
+                    Random.nextInt(256)  // Blue
+                )
+                bitmap.setPixel(x, y, randomColor)
+            }
+        }
+        return saveBitmapAsPng(bitmap, outputPath)
+    }
+
+
 
     private fun saveBitmapAsPng(bitmap: Bitmap, outputPath: String): String {
         val file = File(outputPath)
