@@ -10,7 +10,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.*
@@ -20,25 +24,38 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext // Import for LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import dev.benedek.rig.ui.theme.RIGTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val firstTime = System.currentTimeMillis()
-        val rig = RIG(this) // Using LocalContext here
-        val imagePath = rig.randomImageGenerator()
-        val secondTime = System.currentTimeMillis()
-        val runtime = secondTime - firstTime
+        var imagePath = ""
+        var runtime: Long = 0
+
         enableEdgeToEdge()
         setContent {
             RIGTheme {
                 // https://developer.android.com/develop/ui/compose/components/scaffold
+
+                var presses by remember { mutableStateOf(0) }
+
+                var finished by remember { mutableStateOf(false) }
+                var doRender by remember { mutableStateOf(false) }
+
+                if (doRender) {
+                    Thread(Runnable {
+                        finished = false
+                        val firstTime = System.currentTimeMillis()
+                        val rig = RIG(this) // Using LocalContext here
+                        imagePath = rig.randomImageGenerator()
+                        val secondTime = System.currentTimeMillis()
+                        runtime = secondTime - firstTime
+                        doRender = false
+                        finished = true
+                    }).start()
+
+                }
 
                 Scaffold( // Ide jön a topBar és a bottomBar és a FloatingActionButton
                     topBar = {
@@ -68,16 +85,31 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
-                    }
+                    },
+                    floatingActionButton = {
+                        FloatingActionButton(
+                            onClick = {
+                                presses++
+                                doRender = true
+                            }
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = "Start")
+                        }
+                    },
+
                 ) { innerPadding -> // Ide pedig az oldal tartalma, ez esetben egy függvény
                     RigUi(
-                        path = imagePath,
-                        time = runtime,
+                        imagePath,
+                        runtime,
+                        presses,
+                        finished,
+                        doRender,
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
                                 bottom = 0.dp // Ignore bottom padding to render behind the BottomAppBar
                             )
+                            .verticalScroll(state = rememberScrollState())
                     )
                 }
             }
@@ -86,40 +118,75 @@ class MainActivity : ComponentActivity() {
 }
 
 
+
 @Composable
-fun RigUi(path: String, time: Long, modifier: Modifier = Modifier) {
-    Box(modifier = Modifier.fillMaxSize()) {
+fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween, // Distribute space between top and bottom
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Column(
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
+            modifier = Modifier,//.fillMaxSize(),
+            //verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                modifier = modifier.padding(top = 22.dp),
+                modifier = Modifier
+                    .padding(30.dp)
+                    .padding(top = 22.dp),
                 text = "Say hello to RIG!",
                 fontSize = 36.sp
             )
             Text(
                 text = "Nice to see you here!",
-                modifier = modifier,
+                modifier = Modifier.padding(22.dp),
                 fontSize = 16.sp
             )
             Text(
-                text = "Generated image succesfully in $time ms.\n path is :\n$path",
-                modifier = modifier,
+                text = "Clicks: $presses!",
+                modifier = Modifier,
                 fontSize = 16.sp
             )
-            val bitmap = loadBitmap(path)
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.size(200.dp) // Adjust size as needed
-                )
-            } else {
-                Text(text = "Failed to load image", fontSize = 16.sp)
-            }
         }
+        if (finished) {
+            Column(
+                modifier = Modifier,//.fillMaxSize(),
+                //verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val bitmap = loadBitmap(imagePath)
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(200.dp) // Adjust size as needed
+                    )
+                    Text(
+                        text = "Generated image succesfully in $runtime ms.\n path is :\n$imagePath",
+                        modifier = Modifier,
+                        fontSize = 16.sp
+                    )
+                } else {
+                    Text(text = "Failed to load image", fontSize = 16.sp)
+                }
+            }
+        } else if (doRender){
+            Text(
+                text = "Rendering...",
+                modifier = Modifier,
+                fontSize = 16.sp
+            )
+        } else {
+            Text(
+                text = "Press start button, to begin rendering.",
+                modifier = Modifier,
+                fontSize = 16.sp
+            )
+        }
+
     }
 }
 
@@ -139,6 +206,7 @@ fun loadBitmap(path: String): Bitmap? {
 @Composable
 fun RigUIPreview() {
     RIGTheme {
+        var presses = 0
         Scaffold(
             topBar = {
                 Surface(tonalElevation = 10.dp) {
@@ -156,8 +224,11 @@ fun RigUIPreview() {
             },
         ) { innerPadding ->
             RigUi(
-                path = "Image path",
-                time = 0,
+                imagePath = "Image path",
+                runtime = 0,
+                presses = presses,
+                finished = false,
+                doRender = false,
                 modifier = Modifier.padding(innerPadding)
             )
         }
