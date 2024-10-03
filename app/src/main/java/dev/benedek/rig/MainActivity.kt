@@ -131,7 +131,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, progressPercent: Float, modifier: Modifier = Modifier) {
+fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, progressPercent: MutableState<Float>, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize(),
