@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.sharp.Clear
 import androidx.compose.material3.*
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.*
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
 
                 var presses by remember { mutableStateOf(0) }
 
+                var progressPercent = remember { mutableStateOf(0f) }
                 var finished by remember { mutableStateOf(false) }
                 var doRender by remember { mutableStateOf(false) }
 
@@ -48,7 +50,7 @@ class MainActivity : ComponentActivity() {
                         finished = false
                         val firstTime = System.currentTimeMillis()
                         val rig = RIG(this) // Using LocalContext here
-                        imagePath = rig.randomImageGenerator()
+                        imagePath = rig.randomImageGenerator(progressPercent)
                         val secondTime = System.currentTimeMillis()
                         runtime = secondTime - firstTime
                         doRender = false
@@ -68,6 +70,14 @@ class MainActivity : ComponentActivity() {
                                 title = {
                                     Text("RIG-Android")
                                 },
+                                actions = {
+                                    IconButton(onClick = {finished = false}) {
+                                        Icon(
+                                            imageVector = Icons.Sharp.Clear,
+                                            contentDescription = "Clear images"
+                                        )
+                                    }
+                                }
                             )
                         }
                     },
@@ -104,6 +114,7 @@ class MainActivity : ComponentActivity() {
                         presses,
                         finished,
                         doRender,
+                        progressPercent,
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
@@ -120,7 +131,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, modifier: Modifier = Modifier) {
+fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, progressPercent: Float, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize(),
@@ -178,6 +189,10 @@ fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doR
                 text = "Rendering...",
                 modifier = Modifier,
                 fontSize = 16.sp
+            )
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                progress = {progressPercent},
             )
         } else {
             Text(

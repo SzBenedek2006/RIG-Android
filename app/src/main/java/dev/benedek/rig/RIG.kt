@@ -4,12 +4,17 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.Image
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.random.Random
 
 class RIG(private val context: Context) {
-    fun randomImageGenerator(): String {
+    fun randomImageGenerator(progressPercent: MutableState<Float>): String {
+
 
 
         val outputPath = context.filesDir.absolutePath + "/image.png"
@@ -17,13 +22,15 @@ class RIG(private val context: Context) {
         val height = 1000
         val count = 1
 
-        val imagePath = generatePngAlpha(width, height, outputPath)
+        var max = width * height
+        val imagePath = generatePngAlpha(width, height, outputPath, progressPercent, max)
 
         return imagePath // Return the path of the saved image
     }
 
-    fun generatePngAlpha(width: Int, height: Int, outputPath: String): String {
+    fun generatePngAlpha(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, max: Int): String {
         val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) // Alpha is first
+        var progress = 0
 
         for (x in 0 until width) {
             for (y in 0 until height) {
@@ -35,6 +42,8 @@ class RIG(private val context: Context) {
                     Random.nextInt(256)  // Blue
                 )
                 bitmap.setPixel(x, y, randomColor)
+                progress++
+                progressPercent.value = progress.toFloat() / max * 100
             }
         }
         return saveBitmapAsPng(bitmap, outputPath)
