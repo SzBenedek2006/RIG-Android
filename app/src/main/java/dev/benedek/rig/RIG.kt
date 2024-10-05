@@ -42,9 +42,10 @@ class RIG(private val context: Context) {
                     Random.nextInt(256)  // Blue
                 )
                 bitmap.setPixel(x, y, randomColor)
-                progress++
-                progressPercent.value = progress.toFloat() / max * 100
+
             }
+            progress++
+            progressPercent.value = (progress.toFloat() / width)
         }
         return saveBitmapAsPng(bitmap, outputPath)
     }
