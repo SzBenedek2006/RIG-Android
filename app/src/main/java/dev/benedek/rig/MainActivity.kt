@@ -2,6 +2,7 @@
 
 package dev.benedek.rig
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -47,13 +48,21 @@ class MainActivity : ComponentActivity() {
                 var progressPercent = remember { mutableStateOf(0f) }
                 var finished by remember { mutableStateOf(false) }
                 var doRender by remember { mutableStateOf(false) }
+                var alpha = remember { mutableStateOf(false) }
 
                 if (doRender) {
                     Thread(Runnable {
-                        finished = false
                         val firstTime = System.currentTimeMillis()
-                        val rig = RIG(this) // Using LocalContext here
-                        imagePath = rig.randomImageGenerator(progressPercent)
+                        finished = false
+                        val outputPath = "${filesDir.absolutePath}/image.png"
+                        val width = 1000
+                        val height = 1000
+
+
+                        val rig = RIG()
+                        imagePath = rig.randomImageGenerator(progressPercent, outputPath, width, height, alpha)
+
+
                         val secondTime = System.currentTimeMillis()
                         runtime = secondTime - firstTime
                         progressPercent.value = 0f
@@ -119,6 +128,7 @@ class MainActivity : ComponentActivity() {
                         finished,
                         doRender,
                         progressPercent,
+                        alpha,
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
@@ -135,7 +145,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, progressPercent: MutableState<Float>, modifier: Modifier = Modifier) {
+fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, progressPercent: MutableState<Float>, alpha: MutableState<Boolean>, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize(),
@@ -240,7 +250,10 @@ fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doR
                     Switch(
                         checked = checked,
                         enabled = true,
-                        onCheckedChange = { checked = it},
+                        onCheckedChange = {
+                            checked = it
+                            alpha.value = true
+                                          },
                     )
                 }
 
@@ -293,6 +306,7 @@ fun CustomCard(
 @Composable
 fun RigUIPreview() {
     var progressPercent = remember { mutableStateOf(0f) }
+    var alpha = remember { mutableStateOf(false) }
     RIGTheme {
         var presses = 0
         Scaffold(
@@ -318,6 +332,7 @@ fun RigUIPreview() {
                 finished = false,
                 doRender = false,
                 progressPercent = progressPercent,
+                alpha = alpha,
                 modifier = Modifier.padding(innerPadding)
             )
         }
