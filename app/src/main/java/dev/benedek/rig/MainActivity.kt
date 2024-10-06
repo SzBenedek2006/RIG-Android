@@ -42,11 +42,14 @@ class MainActivity : ComponentActivity() {
                 var progressPercent = remember { mutableStateOf(0f) }
                 var finished by remember { mutableStateOf(false) }
                 var doRender by remember { mutableStateOf(false) }
-                var alpha = remember { mutableStateOf(false) }
+                val alpha = remember { mutableStateOf(false) }
+                val quality = remember { mutableStateOf(100) }
+                val format = remember { mutableStateOf("PNG") }
+
                 val outputPath = "${filesDir.absolutePath}/image.png"
                 val width = 100
                 val height = 100
-                val quality = 100
+
 
                 if (doRender) {
                     Thread(Runnable {
@@ -56,7 +59,7 @@ class MainActivity : ComponentActivity() {
 
 
                         val rig = RIG()
-                        imagePath = rig.randomImageGenerator(this, progressPercent, outputPath, width, height, alpha, quality)
+                        imagePath = rig.randomImageGenerator(this, progressPercent, outputPath, width, height, alpha.value, quality.value, format.value)
 
 
                         val secondTime = System.currentTimeMillis()
@@ -125,6 +128,8 @@ class MainActivity : ComponentActivity() {
                         doRender,
                         progressPercent,
                         alpha,
+                        quality,
+                        format,
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
@@ -153,7 +158,7 @@ fun loadBitmap(path: String): Bitmap? {
 
 @Composable
 fun CustomCard(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     //onClick: (() -> Unit)? = null,
     content: @Composable (ColumnScope.() -> Unit)
 ) {
@@ -176,16 +181,54 @@ fun CustomCard(
         )
     }
 }
+@Composable
+fun ToggleableButton(text: String, isToggled: MutableState<Boolean>, invalidate: MutableState<Boolean>, modifier: Modifier): Boolean { // Make invalidate parameter number flexible
 
 
+    if (isToggled.value) {
+        Button(
+            onClick = {
+                isToggled.value = !isToggled.value // Toggle the color state
+
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            modifier = modifier,
+        ) {
+            Text(text)
+        }
+        return true
+    } else {
+        OutlinedButton(
+            onClick = {
+                isToggled.value = !isToggled.value // Toggle the color state
+                invalidate.value = false
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = modifier,
+        ) {
+            Text(text)
+        }
+        return false
+    }
+
+
+}
 
 
 
 @Preview(showBackground = true, showSystemUi = true, name = "Main screen")
 @Composable
 fun RigUIPreview() {
-    var progressPercent = remember { mutableStateOf(0f) }
-    var alpha = remember { mutableStateOf(false) }
+    val progressPercent = remember { mutableStateOf(0f) }
+    val alpha = remember { mutableStateOf(false) }
+    val quality = remember { mutableStateOf(100) }
+    val format = remember { mutableStateOf("PNG") }
     RIGTheme {
         var presses = 0
         Scaffold(
@@ -212,6 +255,8 @@ fun RigUIPreview() {
                 doRender = false,
                 progressPercent = progressPercent,
                 alpha = alpha,
+                quality = quality,
+                format = format,
                 modifier = Modifier.padding(innerPadding)
             )
         }
