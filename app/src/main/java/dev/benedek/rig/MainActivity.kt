@@ -2,7 +2,6 @@
 
 package dev.benedek.rig
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -10,13 +9,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.sharp.Clear
 import androidx.compose.material3.*
@@ -25,10 +21,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
 import dev.benedek.rig.ui.theme.RIGTheme
 
@@ -55,8 +49,8 @@ class MainActivity : ComponentActivity() {
                         val firstTime = System.currentTimeMillis()
                         finished = false
                         val outputPath = "${filesDir.absolutePath}/image.png"
-                        val width = 1000
-                        val height = 1000
+                        val width = 10
+                        val height = 10
 
 
                         val rig = RIG()
@@ -144,124 +138,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-@Composable
-fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, progressPercent: MutableState<Float>, alpha: MutableState<Boolean>, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween, // Distribute space between top and bottom
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Column(
-            modifier = Modifier,//.fillMaxSize(),
-            //verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                modifier = Modifier
-                    .padding(30.dp)
-                    .padding(top = 22.dp),
-                text = "Say hello to RIG!",
-                fontSize = 36.sp
-            )
-            Text(
-                text = "Nice to see you here!",
-                modifier = Modifier.padding(22.dp),
-                fontSize = 16.sp
-            )
-            // TODO: make a card with text a reusable function.
-            CustomCard {
-                Text(
-                    text = "Clicks: $presses!",
-                    modifier = Modifier,
-                    fontSize = 16.sp
-                )
 
-            }
-
-
-
-        }
-        if (finished) {
-            Column(
-                modifier = Modifier,//.fillMaxSize(),
-                //verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val bitmap = loadBitmap(imagePath)
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(200.dp) // Adjust size as needed
-                    )
-                    Text(
-                        text = "Generated image succesfully in $runtime ms.\n path is :\n$imagePath",
-                        modifier = Modifier,
-                        fontSize = 16.sp
-                    )
-                } else {
-                    Text(text = "Failed to load image", fontSize = 16.sp)
-                }
-            }
-        } else if (doRender){
-            Text(
-                text = "Rendering...",
-                modifier = Modifier,
-                fontSize = 16.sp
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                LinearProgressIndicator(
-                    progress = {(progressPercent.value)},
-                    modifier = Modifier.padding(10.dp)
-
-                )
-                Text(
-                    text = "${"%.2f".format(progressPercent.value * 100)}%",
-                    modifier = Modifier.padding(10.dp)
-                )
-            }
-
-        } else {
-            Text(
-                text = "Press start button, to begin rendering.",
-                modifier = Modifier,
-                fontSize = 16.sp
-            )
-            CustomCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Alpha (transparent pixels)",
-                        modifier = Modifier,
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center
-                    )
-                    var checked by remember { mutableStateOf(false) }
-                    Switch(
-                        checked = checked,
-                        enabled = true,
-                        onCheckedChange = {
-                            checked = it
-                            alpha.value = true
-                                          },
-                    )
-                }
-
-            }
-        }
-
-    }
-}
 
 fun loadBitmap(path: String): Bitmap? {
     return try {
