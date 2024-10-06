@@ -9,7 +9,7 @@ import java.io.FileOutputStream
 
 class RIG() {
 
-    fun randomImageGenerator(context: Context, progressPercent: MutableState<Float>, outputPath: String, width: Int, height: Int, alpha: MutableState<Boolean>, quality): String {
+    fun randomImageGenerator(context: Context, progressPercent: MutableState<Float>, outputPath: String, width: Int, height: Int, alpha: MutableState<Boolean>, quality: Int): String {
 
         var imagePath: String
         if (alpha.value) {
@@ -23,12 +23,12 @@ class RIG() {
         return imagePath // Return the path of the saved image
     }
 
-    fun generatePngAlpha(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, quality): String {
+    fun generatePngAlpha(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, quality: Int): String {
         val bitmap = genBitmapAlpha(width, height, progressPercent)
         return saveBitmapAsPNG(bitmap, outputPath, quality)
     }
 
-    fun generatePng(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, quality): String {
+    fun generatePng(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, quality: Int): String {
         val bitmap = genBitmap(width, height, progressPercent)
         return saveBitmapAsPNG(bitmap, outputPath, quality)
     }
