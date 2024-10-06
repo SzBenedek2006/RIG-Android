@@ -1,6 +1,8 @@
 package dev.benedek.rig
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,13 +21,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doRender: Boolean, progressPercent: MutableState<Float>, alpha: MutableState<Boolean>, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier
             .fillMaxSize(),
@@ -135,7 +141,10 @@ fun RigUi(imagePath: String, runtime: Long, presses: Int, finished: Boolean, doR
                         enabled = true,
                         onCheckedChange = {
                             checked = it
-                            alpha.value = true
+                            alpha.value = checked
+
+                            val toast = Toast.makeText(context, alpha.value.toString(), Toast.LENGTH_SHORT)
+                            toast.show()
                         },
                     )
                 }

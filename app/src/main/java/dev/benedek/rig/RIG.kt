@@ -1,39 +1,39 @@
 package dev.benedek.rig
 
-import android.app.Service
+import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Color
-import android.media.Image
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.random.Random
 
 class RIG() {
 
-    fun randomImageGenerator(progressPercent: MutableState<Float>, outputPath: String, width: Int, height: Int, alpha: MutableState<Boolean>): String {
+    fun randomImageGenerator(context: Context, progressPercent: MutableState<Float>, outputPath: String, width: Int, height: Int, alpha: MutableState<Boolean>, quality): String {
 
         var imagePath: String
         if (alpha.value) {
-            imagePath = generatePngAlpha(width, height, outputPath, progressPercent)
+            imagePath = generatePngAlpha(width, height, outputPath, progressPercent, quality)
+            Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha.value}")
         } else {
-            imagePath = generatePng(width, height, outputPath, progressPercent)
+            imagePath = generatePng(width, height, outputPath, progressPercent, quality)
+            Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha.value}")
         }
 
         return imagePath // Return the path of the saved image
     }
 
-    fun generatePngAlpha(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>): String {
+    fun generatePngAlpha(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, quality): String {
         val bitmap = genBitmapAlpha(width, height, progressPercent)
-        return saveBitmapAsPng(bitmap, outputPath)
+        return saveBitmapAsPNG(bitmap, outputPath, quality)
     }
 
-    fun generatePng(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>): String {
+    fun generatePng(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, quality): String {
         val bitmap = genBitmap(width, height, progressPercent)
-        return saveBitmapAsPng(bitmap, outputPath)
+        return saveBitmapAsPNG(bitmap, outputPath, quality)
     }
 
-    fun saveBitmapAsPng(bitmap: Bitmap, outputPath: String): String {
+    fun saveBitmapAsPNG(bitmap: Bitmap, outputPath: String, quiality: Int): String {
         val file = File(outputPath)
 
         // Create a file output stream to save the bitmap
@@ -43,5 +43,13 @@ class RIG() {
 
         return file.absolutePath // Return the absolute path of the saved file
     }
+
+    fun saveBitmapAsJPEG(bitmap: Bitmap, outputPath: String, quiality: Int) {
+        val file = File(outputPath)
+        FileOutputStream(file).use { outputStream ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream) // Save as PNG
+        }
+    }
+
 
 }

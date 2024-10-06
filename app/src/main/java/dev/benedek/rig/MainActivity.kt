@@ -43,18 +43,20 @@ class MainActivity : ComponentActivity() {
                 var finished by remember { mutableStateOf(false) }
                 var doRender by remember { mutableStateOf(false) }
                 var alpha = remember { mutableStateOf(false) }
+                val outputPath = "${filesDir.absolutePath}/image.png"
+                val width = 100
+                val height = 100
+                val quality = 100
 
                 if (doRender) {
                     Thread(Runnable {
                         val firstTime = System.currentTimeMillis()
                         finished = false
-                        val outputPath = "${filesDir.absolutePath}/image.png"
-                        val width = 10
-                        val height = 10
+
 
 
                         val rig = RIG()
-                        imagePath = rig.randomImageGenerator(progressPercent, outputPath, width, height, alpha)
+                        imagePath = rig.randomImageGenerator(this, progressPercent, outputPath, width, height, alpha, quality)
 
 
                         val secondTime = System.currentTimeMillis()
