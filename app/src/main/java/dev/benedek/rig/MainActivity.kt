@@ -37,13 +37,13 @@ class MainActivity : ComponentActivity() {
             RIGTheme {
                 // https://developer.android.com/develop/ui/compose/components/scaffold
 
-                var presses by remember { mutableStateOf(0) }
+                var presses by remember { mutableIntStateOf(0) }
 
-                var progressPercent = remember { mutableStateOf(0f) }
+                val progressPercent = remember { mutableFloatStateOf(0f) }
                 var finished by remember { mutableStateOf(false) }
                 var doRender by remember { mutableStateOf(false) }
                 val alpha = remember { mutableStateOf(false) }
-                val quality = remember { mutableStateOf(100) }
+                val quality = remember { mutableIntStateOf(100) }
                 val format = remember { mutableStateOf("PNG") }
 
                 val outputPath = "${filesDir.absolutePath}/image.png"
@@ -52,26 +52,32 @@ class MainActivity : ComponentActivity() {
 
 
                 if (doRender) {
-                    Thread(Runnable {
+                    Thread {
                         val firstTime = System.currentTimeMillis()
                         finished = false
 
-
-
                         val rig = RIG()
-                        imagePath = rig.randomImageGenerator(this, progressPercent, outputPath, width, height, alpha.value, quality.value, format.value)
-
+                        imagePath = rig.randomImageGenerator(
+                            this,
+                            progressPercent,
+                            outputPath,
+                            width,
+                            height,
+                            alpha.value,
+                            quality.intValue,
+                            format.value
+                        )
 
                         val secondTime = System.currentTimeMillis()
                         runtime = secondTime - firstTime
-                        progressPercent.value = 0f
+                        progressPercent.floatValue = 0f
                         doRender = false
                         finished = true
-                    }).start()
+                    }.start()
 
                 }
 
-                Scaffold( // Ide jön a topBar és a bottomBar és a FloatingActionButton
+                Scaffold(
                     topBar = {
                         Surface(tonalElevation = 10.dp) {
                             TopAppBar(
@@ -119,7 +125,7 @@ class MainActivity : ComponentActivity() {
                         }
                     },
 
-                ) { innerPadding -> // Ide pedig az oldal tartalma, ez esetben egy függvény
+                ) { innerPadding ->
                     RigUi(
                         imagePath,
                         runtime,
@@ -133,7 +139,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
-                                bottom = 0.dp // Ignore bottom padding to render behind the BottomAppBar
+                                bottom = innerPadding.calculateBottomPadding() // Ignore bottom padding to render behind the BottomAppBar
                             )
                             .verticalScroll(state = rememberScrollState())
                     )
@@ -182,7 +188,7 @@ fun CustomCard(
     }
 }
 @Composable
-fun ToggleableButton(text: String, isToggled: MutableState<Boolean>, invalidate: MutableState<Boolean>, modifier: Modifier): Boolean { // Make invalidate parameter number flexible
+fun toggleableButton(text: String, isToggled: MutableState<Boolean>, invalidate: MutableState<Boolean>, modifier: Modifier): Boolean { // Make invalidate parameter number flexible
 
 
     if (isToggled.value) {
@@ -225,12 +231,12 @@ fun ToggleableButton(text: String, isToggled: MutableState<Boolean>, invalidate:
 @Preview(showBackground = true, showSystemUi = true, name = "Main screen")
 @Composable
 fun RigUIPreview() {
-    val progressPercent = remember { mutableStateOf(0f) }
+    val progressPercent = remember { mutableFloatStateOf(0f) }
     val alpha = remember { mutableStateOf(false) }
-    val quality = remember { mutableStateOf(100) }
+    val quality = remember { mutableIntStateOf(100) }
     val format = remember { mutableStateOf("PNG") }
     RIGTheme {
-        var presses = 0
+        val presses = 0
         Scaffold(
             topBar = {
                 Surface(tonalElevation = 10.dp) {

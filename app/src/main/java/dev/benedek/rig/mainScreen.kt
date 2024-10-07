@@ -6,12 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -100,7 +98,7 @@ fun RigUi(
                             .size(200.dp) // Adjust size as needed
                     )
                     Text(
-                        text = "Generated image succesfully in $runtime ms.\n path is :\n$imagePath",
+                        text = "Generated image successfully in $runtime ms.\n path is :\n$imagePath",
                         modifier = Modifier,
                         fontSize = 16.sp
                     )
@@ -164,7 +162,7 @@ fun WelcomeScreenState(
 
             Switch(
                 checked = checked.value,
-                enabled = if (format.value == "PNG") true else false,
+                enabled = format.value == "PNG",
                 onCheckedChange = {
                     checked.value = it
                     alpha.value = checked.value
@@ -199,7 +197,7 @@ fun WelcomeScreenState(
             Slider(
                 value = quality.value.toFloat(),
                 onValueChange = { quality.value = it.roundToInt()},
-                enabled = if (format.value == "JPEG") true else false,
+                enabled = format.value == "JPEG",
                 valueRange = 0f..100f,
                 steps = 9,
             )
@@ -220,12 +218,12 @@ fun WelcomeScreenState(
                 textAlign = TextAlign.Center
             )
             Row {
-                var pngToggled = if (format.value == "PNG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
-                var jpegToggled = if (format.value == "JPEG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
+                val pngToggled = if (format.value == "PNG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
+                val jpegToggled = if (format.value == "JPEG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
 
 
-                ToggleableButton("PNG", pngToggled, jpegToggled, Modifier.padding(3.dp))
-                ToggleableButton("JPEG", jpegToggled, pngToggled, Modifier.padding(3.dp))
+                toggleableButton("PNG", pngToggled, jpegToggled, Modifier.padding(3.dp))
+                toggleableButton("JPEG", jpegToggled, pngToggled, Modifier.padding(3.dp))
 
                 format.value = if (pngToggled.value) "PNG" else if (jpegToggled.value) "JPEG" else ""
 
@@ -234,5 +232,6 @@ fun WelcomeScreenState(
         }
 
     }
+
 
 }

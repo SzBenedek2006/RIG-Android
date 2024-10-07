@@ -2,12 +2,12 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="RIG">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-10-03T08:54:21.536986629Z">
+        <DropdownSelection timestamp="2024-10-07T15:47:49.906447797Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=RFCT32XWH7M" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/szbenedek2006/.android/avd/Pixel_6_Pro_API_33.avd" />
             </handle>
           </Target>
         </DropdownSelection>
