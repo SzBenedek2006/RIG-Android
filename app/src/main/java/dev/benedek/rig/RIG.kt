@@ -10,70 +10,69 @@ import java.io.FileOutputStream
 
 class RIG() {
 
-    fun randomImageGenerator(context: Context, progressPercent: MutableState<Float>, outputPath: String, width: Int, height: Int, alpha: Boolean, quality: Int, format: String): String {
+    fun randomImageGenerator(context: Context, progressPercent: MutableState<Float>, outputPath: String, width: Int, height: Int, alpha: Boolean, quality: Int, format: String, count: Int): String {
 
         var imagePath: String
-        if (alpha && format == "PNG") {
-            imagePath = generatePngAlpha(width, height, outputPath, progressPercent, quality)
+
+
+        if (format == "PNG"){
+            imagePath = generatePng(width, height, outputPath, progressPercent, alpha, count)
+            Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
+        } else if (format == "JPEG") {
+            imagePath = generateJPEG(width, height, outputPath, progressPercent, quality, count)
             Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
         } else {
-            if (format == "PNG"){
-                imagePath = generatePng(width, height, outputPath, progressPercent, quality)
-                Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
-            } else if (format == "JPEG") {
-                imagePath = generateJPEG(width, height, outputPath, progressPercent, quality)
-                Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
-            } else {
-                imagePath = ""
-            }
+            imagePath = ""
         }
 
-        return imagePath // Return the path of the saved image
+
+        return imagePath // Return the absolute path of the saved image
     }
 
-    fun generatePngAlpha(
-        width: Int,
-        height: Int,
-        outputPath: String,
-        progressPercent: MutableState<Float>,
-        quality: Int
-    ): String {
-        val bitmap = genBitmapAlpha(width, height, progressPercent)
-        return saveBitmapAsPNG(bitmap, outputPath, quality)
-    }
+
 
     fun generatePng(
         width: Int,
         height: Int,
         outputPath: String,
         progressPercent: MutableState<Float>,
-        quality: Int
+        alpha: Boolean,
+        count: Int
     ): String {
-        val bitmap = genBitmap(width, height, progressPercent)
-        return saveBitmapAsPNG(bitmap, outputPath, quality)
-    }
 
-    fun generateJPEG(width: Int, height: Int, outputPath: String, progressPercent: MutableState<Float>, quality: Int): String {
-        val bitmap = genBitmap(width, height, progressPercent)
-        return saveBitmapAsJPEG(bitmap, outputPath, quality)
-    }
+        val bitmap = if (alpha){
+            genBitmapAlpha(width, height, progressPercent)
+        } else {
+            genBitmap(width, height, progressPercent)
+        }
 
-    fun saveBitmapAsPNG(bitmap: Bitmap, outputPath: String, quality: Int): String {
+        // Saving bitmap as a PNG
         val file = File(outputPath)
-
         // Create a file output stream to save the bitmap
         FileOutputStream(file).use { outputStream ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream) // Save as PNG
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream) // Save as PNG
         }
 
         return file.absolutePath // Return the absolute path of the saved file
     }
 
-    fun saveBitmapAsJPEG(bitmap: Bitmap, outputPath: String, quality: Int): String {
+    fun generateJPEG(
+        width: Int,
+        height: Int,
+        outputPath: String,
+        progressPercent: MutableState<Float>,
+        quality: Int,
+        count: Int
+    ): String {
+        val bitmap = genBitmap(width, height, progressPercent)
+
+        // Saving bitmap as a JPEG
         val file = File(outputPath)
         FileOutputStream(file).use { outputStream ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream) // Save as PNG
         }
         return file.absolutePath
     }
+
+
 }

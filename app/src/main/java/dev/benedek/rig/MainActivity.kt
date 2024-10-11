@@ -55,6 +55,8 @@ class MainActivity : ComponentActivity() {
                 val format = remember { mutableStateOf("PNG") }
                 val width = remember { mutableIntStateOf(0) }
                 val height = remember { mutableIntStateOf(0) }
+                val count = remember { mutableIntStateOf(10) } // 10 for now, set to 0
+
 
                 val outputPath = "${filesDir.absolutePath}/image.png"
 
@@ -74,7 +76,8 @@ class MainActivity : ComponentActivity() {
                             height.intValue,
                             alpha.value,
                             quality.intValue,
-                            format.value
+                            format.value,
+                            count.intValue
                     )
 
 
