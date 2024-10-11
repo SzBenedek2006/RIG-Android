@@ -5,10 +5,12 @@ package dev.benedek.rig
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,10 +23,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextAlign
 import dev.benedek.rig.ui.theme.RIGTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,43 +48,50 @@ class MainActivity : ComponentActivity() {
                 var presses by remember { mutableIntStateOf(0) }
 
                 val progressPercent = remember { mutableFloatStateOf(0f) }
-                var finished by remember { mutableStateOf(false) }
-                var doRender by remember { mutableStateOf(false) }
+                val finished = remember { mutableStateOf(false) }
+                val doRender = remember { mutableStateOf(false) }
                 val alpha = remember { mutableStateOf(false) }
                 val quality = remember { mutableIntStateOf(100) }
                 val format = remember { mutableStateOf("PNG") }
+                val width = remember { mutableIntStateOf(0) }
+                val height = remember { mutableIntStateOf(0) }
 
                 val outputPath = "${filesDir.absolutePath}/image.png"
-                val width = 100
-                val height = 100
+
+                val context = LocalContext.current
+                val thread = Thread {
+                    val firstTime = System.currentTimeMillis()
+                    finished.value = false
+                    progressPercent.floatValue = 0f
+                    val rig = RIG()
 
 
-                if (doRender) {
-                    Thread {
-                        val firstTime = System.currentTimeMillis()
-                        finished = false
-
-                        val rig = RIG()
-                        imagePath = rig.randomImageGenerator(
+                    imagePath = rig.randomImageGenerator(
                             this,
                             progressPercent,
                             outputPath,
-                            width,
-                            height,
+                            width.intValue,
+                            height.intValue,
                             alpha.value,
                             quality.intValue,
                             format.value
-                        )
+                    )
 
-                        val secondTime = System.currentTimeMillis()
-                        runtime = secondTime - firstTime
-                        progressPercent.floatValue = 0f
-                        doRender = false
-                        finished = true
-                    }.start()
 
+
+                    val secondTime = System.currentTimeMillis()
+                    runtime = secondTime - firstTime
+                    progressPercent.floatValue = 0f
+                    doRender.value = false
+                    finished.value = true
                 }
 
+                if (doRender.value) {
+                    thread.start()
+                } else {
+                    thread.interrupt()
+                }
+                val focusManager = LocalFocusManager.current
                 Scaffold(
                     topBar = {
                         Surface(tonalElevation = 10.dp) {
@@ -89,7 +104,10 @@ class MainActivity : ComponentActivity() {
                                     Text("RIG-Android")
                                 },
                                 actions = {
-                                    IconButton(onClick = {finished = false}) {
+                                    IconButton(onClick = {
+                                        finished.value = false
+                                        doRender.value = false
+                                    }) {
                                         Icon(
                                             imageVector = Icons.Sharp.Clear,
                                             contentDescription = "Clear images"
@@ -118,7 +136,13 @@ class MainActivity : ComponentActivity() {
                         FloatingActionButton(
                             onClick = {
                                 presses++
-                                doRender = true
+                                if (width.intValue > 1 || height.intValue > 1) {
+                                    doRender.value = true
+                                } else {
+                                    val toast = Toast.makeText(context, "Resolution is not accepted", Toast.LENGTH_SHORT)
+                                    toast.show()
+                                }
+
                             }
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = "Start")
@@ -130,18 +154,25 @@ class MainActivity : ComponentActivity() {
                         imagePath,
                         runtime,
                         presses,
-                        finished,
-                        doRender,
+                        finished.value,
+                        doRender.value,
                         progressPercent,
                         alpha,
                         quality,
                         format,
+                        width,
+                        height,
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
                                 bottom = innerPadding.calculateBottomPadding() // Ignore bottom padding to render behind the BottomAppBar
                             )
                             .verticalScroll(state = rememberScrollState())
+                            .pointerInput(Unit) {
+                            detectTapGestures {
+                                focusManager.clearFocus()
+                            }
+                        },
                     )
                 }
             }
@@ -188,13 +219,16 @@ fun CustomCard(
     }
 }
 @Composable
-fun toggleableButton(text: String, isToggled: MutableState<Boolean>, invalidate: MutableState<Boolean>, modifier: Modifier): Boolean { // Make invalidate parameter number flexible
-
+fun formatButton(text: String, isToggled: MutableState<Boolean>, invalidate: MutableState<Boolean>, modifier: Modifier): Boolean { // Make invalidate parameter number flexible
+    val haptic = LocalHapticFeedback.current
 
     if (isToggled.value) {
         Button(
             onClick = {
-                isToggled.value = !isToggled.value // Toggle the color state
+                if (isToggled.value) {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                }
+
 
             },
             colors = ButtonDefaults.buttonColors(
@@ -211,6 +245,7 @@ fun toggleableButton(text: String, isToggled: MutableState<Boolean>, invalidate:
             onClick = {
                 isToggled.value = !isToggled.value // Toggle the color state
                 invalidate.value = false
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -235,6 +270,9 @@ fun RigUIPreview() {
     val alpha = remember { mutableStateOf(false) }
     val quality = remember { mutableIntStateOf(100) }
     val format = remember { mutableStateOf("PNG") }
+    val width = remember { mutableIntStateOf(0) }
+    val height = remember { mutableIntStateOf(0) }
+
     RIGTheme {
         val presses = 0
         Scaffold(
@@ -263,6 +301,8 @@ fun RigUIPreview() {
                 alpha = alpha,
                 quality = quality,
                 format = format,
+                width = width,
+                height = height,
                 modifier = Modifier.padding(innerPadding)
             )
         }

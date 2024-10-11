@@ -3,14 +3,18 @@ package dev.benedek.rig
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -21,7 +25,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,6 +47,8 @@ fun RigUi(
     alpha: MutableState<Boolean>,
     quality: MutableState<Int>,
     format: MutableState<String>,
+    width: MutableState<Int>,
+    height: MutableState<Int>,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -129,7 +140,7 @@ fun RigUi(
             }
 
         } else {
-            WelcomeScreenState(context, checked, alpha, quality, format)
+            WelcomeScreenState(context, checked, alpha, quality, format, width, height)
         }
 
     }
@@ -141,7 +152,9 @@ fun WelcomeScreenState(
     checked: MutableState<Boolean>,
     alpha: MutableState<Boolean>,
     quality: MutableState<Int>,
-    format: MutableState<String>
+    format: MutableState<String>,
+    width: MutableState<Int>,
+    height: MutableState<Int>,
 ){
     Text(
         text = "Press start button, to begin rendering.",
@@ -159,14 +172,14 @@ fun WelcomeScreenState(
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
-
+            val haptic = LocalHapticFeedback.current
             Switch(
                 checked = checked.value,
                 enabled = format.value == "PNG",
                 onCheckedChange = {
                     checked.value = it
                     alpha.value = checked.value
-
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     val toast = Toast.makeText(context, alpha.value.toString(), Toast.LENGTH_SHORT)
                     toast.show()
                 },
@@ -193,10 +206,25 @@ fun WelcomeScreenState(
                     textAlign = TextAlign.Center
                 )
             }
-
+            val haptic = LocalHapticFeedback.current
             Slider(
                 value = quality.value.toFloat(),
-                onValueChange = { quality.value = it.roundToInt()},
+                onValueChange = {
+                    val newValue = it.roundToInt()
+
+
+                    if (quality.value % 10 == 0 && newValue != quality.value) {
+                        quality.value = newValue
+
+                        if (quality.value != 100 && quality.value != 0) {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        } else {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    }
+
+
+                                },
                 enabled = format.value == "JPEG",
                 valueRange = 0f..100f,
                 steps = 9,
@@ -222,8 +250,8 @@ fun WelcomeScreenState(
                 val jpegToggled = if (format.value == "JPEG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
 
 
-                toggleableButton("PNG", pngToggled, jpegToggled, Modifier.padding(3.dp))
-                toggleableButton("JPEG", jpegToggled, pngToggled, Modifier.padding(3.dp))
+                formatButton("PNG", pngToggled, jpegToggled, Modifier.padding(3.dp))
+                formatButton("JPEG", jpegToggled, pngToggled, Modifier.padding(3.dp))
 
                 format.value = if (pngToggled.value) "PNG" else if (jpegToggled.value) "JPEG" else ""
 
@@ -231,6 +259,59 @@ fun WelcomeScreenState(
 
         }
 
+    }
+
+    CustomCard {
+
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "Resolution",
+                modifier = Modifier,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+            Row(
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+
+                val widthText = if (width.value == 0) remember { mutableStateOf("") } else remember { mutableStateOf(width.value.toString()) }
+                OutlinedTextField(
+                    value = widthText.value,
+                    onValueChange = {newWidth ->
+                        widthText.value = newWidth // For correct preview
+                        width.value = newWidth.toIntOrNull() ?: 0
+                    },
+                    label = { Text("width") },
+                    //placeholder = { Text(text = "enter width", modifier = Modifier.alpha(0.5F)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier
+                        .requiredWidth(100.dp)
+                        .padding(end = 8.dp)
+                )
+                val heightText = if (height.value == 0) remember { mutableStateOf("") } else remember { mutableStateOf(height.value.toString()) }
+                OutlinedTextField(
+                    value = heightText.value,
+                    onValueChange = {newHeight ->
+                        heightText.value = newHeight // For correct preview
+                        height.value = newHeight.toIntOrNull() ?: 0
+                    },
+                    label = { Text("height") },
+                    //placeholder = { Text(text = "enter height", modifier = Modifier.alpha(0.5F)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier
+                        .requiredWidth(100.dp)
+                        .padding(start = 8.dp)
+                )
+            }
+        }
     }
 
 
