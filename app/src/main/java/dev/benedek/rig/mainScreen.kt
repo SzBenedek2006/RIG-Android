@@ -19,6 +19,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,8 +48,9 @@ fun RigUi(
     alpha: MutableState<Boolean>,
     quality: MutableState<Int>,
     format: MutableState<String>,
-    width: MutableState<Int>,
-    height: MutableState<Int>,
+    width: MutableIntState,
+    height: MutableIntState,
+    count: MutableIntState,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -138,7 +140,7 @@ fun RigUi(
                     modifier = Modifier.padding(10.dp)
                 )
             }
-
+            
         } else {
             WelcomeScreenState(context, checked, alpha, quality, format, width, height)
         }

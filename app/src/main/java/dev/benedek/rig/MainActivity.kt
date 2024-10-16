@@ -32,12 +32,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextAlign
 import dev.benedek.rig.ui.theme.RIGTheme
+import java.io.File
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var imagePath = ""
+        var imagePath = emptyArray<File>()
         var runtime: Long = 0
 
         enableEdgeToEdge()
@@ -56,9 +57,10 @@ class MainActivity : ComponentActivity() {
                 val width = remember { mutableIntStateOf(0) }
                 val height = remember { mutableIntStateOf(0) }
                 val count = remember { mutableIntStateOf(10) } // 10 for now, set to 0
+                val currentCount = remember { mutableIntStateOf(1) }
 
 
-                val outputPath = "${filesDir.absolutePath}/image.png"
+                val outputPath = "${filesDir.absolutePath}"
 
                 val context = LocalContext.current
                 val thread = Thread {
@@ -68,16 +70,17 @@ class MainActivity : ComponentActivity() {
                     val rig = RIG()
 
 
-                    imagePath = rig.randomImageGenerator(
-                            this,
-                            progressPercent,
-                            outputPath,
-                            width.intValue,
-                            height.intValue,
-                            alpha.value,
-                            quality.intValue,
-                            format.value,
-                            count.intValue
+                    rig.randomImageGenerator(
+                        this,
+                        progressPercent,
+                        outputPath,
+                        width.intValue,
+                        height.intValue,
+                        alpha.value,
+                        quality.intValue,
+                        format.value,
+                        count.intValue,
+                        currentCount
                     )
 
 
@@ -154,7 +157,7 @@ class MainActivity : ComponentActivity() {
 
                 ) { innerPadding ->
                     RigUi(
-                        imagePath,
+                        outputPath,
                         runtime,
                         presses,
                         finished.value,
@@ -165,6 +168,7 @@ class MainActivity : ComponentActivity() {
                         format,
                         width,
                         height,
+                        count,
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
@@ -269,12 +273,7 @@ fun formatButton(text: String, isToggled: MutableState<Boolean>, invalidate: Mut
 @Preview(showBackground = true, showSystemUi = true, name = "Main screen")
 @Composable
 fun RigUIPreview() {
-    val progressPercent = remember { mutableFloatStateOf(0f) }
-    val alpha = remember { mutableStateOf(false) }
-    val quality = remember { mutableIntStateOf(100) }
-    val format = remember { mutableStateOf("PNG") }
-    val width = remember { mutableIntStateOf(0) }
-    val height = remember { mutableIntStateOf(0) }
+
 
     RIGTheme {
         val presses = 0
@@ -300,12 +299,13 @@ fun RigUIPreview() {
                 presses = presses,
                 finished = false,
                 doRender = false,
-                progressPercent = progressPercent,
-                alpha = alpha,
-                quality = quality,
-                format = format,
-                width = width,
-                height = height,
+                progressPercent = remember { mutableFloatStateOf(0f) },
+                alpha = remember { mutableStateOf(false) },
+                quality = remember { mutableIntStateOf(100) },
+                format = remember { mutableStateOf("PNG") },
+                width = remember { mutableIntStateOf(0) },
+                height = remember { mutableIntStateOf(0) },
+                count = remember { mutableIntStateOf(10) },
                 modifier = Modifier.padding(innerPadding)
             )
         }
