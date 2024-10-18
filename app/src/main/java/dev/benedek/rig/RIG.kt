@@ -18,10 +18,10 @@ class RIG() {
 
         // For loop and list for files. (to handle count and generate multiple images.)
         if (format == "PNG"){
-            imagePaths = generatePng(width, height, outputPath, progressPercent, alpha, count)
+            imagePaths = generatePng(width, height, outputPath, progressPercent, alpha, count, currentCount)
             Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
         } else if (format == "JPEG") {
-            //imagePath = generateJPEG(width, height, outputPath, progressPercent, quality, count)
+            //imagePath = generateJPEG(width, height, outputPath, progressPercent, quality, count, currentCount)
             Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
         } else {
             imagePaths = emptyArray()
@@ -39,7 +39,8 @@ class RIG() {
         outputPath: String,
         progressPercent: MutableState<Float>,
         alpha: Boolean,
-        count: Int
+        count: Int,
+        currentCount: MutableIntState,
     ): Array<File> {
 
         val format = "png"
@@ -47,7 +48,7 @@ class RIG() {
 
         for (num in 0 until count) {
 
-
+            currentCount.intValue = num + 1
 
             val bitmap = if (alpha){
                 genBitmapAlpha(width, height, progressPercent)

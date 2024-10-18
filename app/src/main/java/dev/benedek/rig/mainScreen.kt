@@ -51,6 +51,7 @@ fun RigUi(
     width: MutableIntState,
     height: MutableIntState,
     count: MutableIntState,
+    currentCount: MutableIntState,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -131,12 +132,27 @@ fun RigUi(
                 horizontalArrangement = Arrangement.Center
             ) {
                 LinearProgressIndicator(
-                    progress = {(progressPercent.value)},
+                    progress = {progressPercent.value},
                     modifier = Modifier.padding(10.dp)
 
                 )
                 Text(
                     text = "${"%.2f".format(progressPercent.value * 100)}%",
+                    modifier = Modifier.padding(10.dp)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                LinearProgressIndicator(
+                    progress = {currentCount.intValue / count.intValue.toFloat()},
+                    modifier = Modifier.padding(10.dp)
+
+                )
+                Text(
+                    text = "${currentCount.intValue} / ${count.intValue}",
                     modifier = Modifier.padding(10.dp)
                 )
             }

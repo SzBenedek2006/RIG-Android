@@ -169,6 +169,7 @@ class MainActivity : ComponentActivity() {
                         width,
                         height,
                         count,
+                        currentCount,
                         modifier = Modifier
                             .padding(
                                 top = innerPadding.calculateTopPadding(), // Only respect top padding
@@ -306,6 +307,7 @@ fun RigUIPreview() {
                 width = remember { mutableIntStateOf(0) },
                 height = remember { mutableIntStateOf(0) },
                 count = remember { mutableIntStateOf(10) },
+                currentCount = remember { mutableIntStateOf(1) },
                 modifier = Modifier.padding(innerPadding)
             )
         }
