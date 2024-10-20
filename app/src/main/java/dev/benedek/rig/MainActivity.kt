@@ -201,73 +201,7 @@ fun loadBitmap(path: String): Bitmap? {
     }
 }
 
-@Composable
-fun CustomCard(
-    modifier: Modifier = Modifier.fillMaxWidth(),
-    //onClick: (() -> Unit)? = null,
-    content: @Composable (ColumnScope.() -> Unit)
-) {
-    Surface(
-        modifier = modifier
-            //.clickable(onClick = onClick ?: {})
-            .padding(8.dp),
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        tonalElevation = 2.dp,
-        shadowElevation = 4.dp,
-        border = BorderStroke(2.dp, Color.Gray),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            content = content
-        )
-    }
-}
-@Composable
-fun formatButton(text: String, isToggled: MutableState<Boolean>, invalidate: MutableState<Boolean>, modifier: Modifier): Boolean { // Make invalidate parameter number flexible
-    val haptic = LocalHapticFeedback.current
 
-    if (isToggled.value) {
-        Button(
-            onClick = {
-                if (isToggled.value) {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                }
-
-
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            modifier = modifier,
-        ) {
-            Text(text)
-        }
-        return true
-    } else {
-        OutlinedButton(
-            onClick = {
-                isToggled.value = !isToggled.value // Toggle the color state
-                invalidate.value = false
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = modifier,
-        ) {
-            Text(text)
-        }
-        return false
-    }
-
-
-}
 
 
 
