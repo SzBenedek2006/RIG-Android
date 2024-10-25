@@ -2,6 +2,13 @@ package dev.benedek.rig
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 @Composable
@@ -88,61 +96,84 @@ fun RigUi(
 
 
         }
-        if (doRender) {
-            CustomCard {
+
+        val visible = remember {mutableStateOf(false)}
+
+        if (finished || doRender) {
+            visible.value = true
+        } else {
+            visible.value = false
+        }
+
+        AnimatedVisibility(
+            visible.value,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+        ) {
+            CustomCard(
+                modifier = Modifier
+                    .animateContentSize()
+            ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Rendering...",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(bottom = 8.dp) // Add a little space below the title if needed
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LinearProgressIndicator(
-                            progress = { progressPercent.value },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp)
+                    if (doRender) {
+                        Text(
+                            text = "Rendering...",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(bottom = 8.dp) // Add a little space below the title if needed
+                        )
+                    } else if (finished) {
+                        Text(
+                            text = "Finished!",
+                            modifier = Modifier,
+                            fontSize = 16.sp
+
                         )
                         Text(
-                            text = "${"%.2f".format(progressPercent.value * 100)}%",
-                            modifier = Modifier.padding(start = 8.dp)
+                            text = "Path: $imagePath",
+                            modifier = Modifier,
+                            fontSize = 16.sp
                         )
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LinearProgressIndicator(
-                            progress = { currentCount.intValue / count.intValue.toFloat() },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp)
-                        )
-                        Text(
-                            text = "${currentCount.intValue} / ${count.intValue}",
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
+                    if (doRender) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            LinearProgressIndicator(
+                                progress = { progressPercent.value },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
+                            )
+                            Text(
+                                text = "${"%.2f".format(progressPercent.value * 100)}%",
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            LinearProgressIndicator(
+                                progress = { currentCount.intValue / count.intValue.toFloat() },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
+                            )
+                            Text(
+                                text = "${currentCount.intValue} / ${count.intValue}",
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
                     }
                 }
             }
         }
-        if (finished) {
-            CustomCard {
-                Text(
-                    text = "Finished!",
-                    modifier = Modifier,
-                    fontSize = 16.sp
 
-                )
-            }
-        }
 
-        WelcomeScreenState(context, alpha, quality, format, width, height)
+        WelcomeScreenState(context, alpha, quality, format, width, height, count)
 
 
 
@@ -220,6 +251,7 @@ fun WelcomeScreenState(
     format: MutableState<String>,
     width: MutableState<Int>,
     height: MutableState<Int>,
+    count: MutableState<Int>,
 ){
     val checked = remember { mutableStateOf(false) }
     Text(
@@ -380,5 +412,36 @@ fun WelcomeScreenState(
         }
     }
 
+    CustomCard {
+
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "Count",
+                modifier = Modifier,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+            val countText = if (count.value == 0) remember { mutableStateOf("") } else remember { mutableStateOf(count.value.toString()) }
+            OutlinedTextField(
+                value = countText.value,
+                onValueChange = {newCount ->
+                    countText.value = newCount // For correct preview
+                    count.value = newCount.toIntOrNull() ?: 0
+                },
+                label = { Text("count") },
+                //placeholder = { Text(text = "enter width", modifier = Modifier.alpha(0.5F)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier
+                    .requiredWidth(100.dp)
+                    .padding(end = 8.dp)
+            )
+        }
+    }
 
 }

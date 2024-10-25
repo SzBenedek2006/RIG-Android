@@ -21,7 +21,7 @@ class RIG() {
             imagePaths = generatePng(width, height, outputPath, progressPercent, alpha, count, currentCount)
             Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
         } else if (format == "JPEG") {
-            //imagePath = generateJPEG(width, height, outputPath, progressPercent, quality, count, currentCount)
+            imagePaths = generateJPEG(width, height, outputPath, progressPercent, quality, count, currentCount)
             Log.d("RIG", "Context: ${context::class.java.simpleName}, Alpha: ${alpha}")
         } else {
             imagePaths = emptyArray()
@@ -77,17 +77,31 @@ class RIG() {
         outputPath: String,
         progressPercent: MutableState<Float>,
         quality: Int,
-        count: Int
-    ): String {
-        val bitmap = genBitmap(width, height, progressPercent)
+        count: Int,
+        currentCount: MutableIntState
+    ): Array<File> {
+        val format = "png"
+        var file = Array<File>(count){ File("${outputPath}/image${it}.$format") }
 
-        // Saving bitmap as a JPEG
-        val file = File(outputPath)
-        FileOutputStream(file).use { outputStream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream) // Save as PNG
+
+        // for (int i = 0; i <= 10; i++)
+        for (num in 0 until count) {
+
+            currentCount.intValue = num + 1
+
+            val bitmap = genBitmap(width, height, progressPercent)
+
+
+
+            // Saving bitmap as a PNG
+            file[num] = File("${outputPath}/image${num+1}.$format")
+
+
+            // Create a file output stream to save the bitmap
+            FileOutputStream(file[num]).use { outputStream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream) // Save as PNG
+            }
         }
-        return file.absolutePath
+        return file
     }
-
-
 }

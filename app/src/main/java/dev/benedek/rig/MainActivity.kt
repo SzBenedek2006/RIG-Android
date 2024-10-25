@@ -11,6 +11,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -56,11 +58,11 @@ class MainActivity : ComponentActivity() {
                 val format = remember { mutableStateOf("PNG") }
                 val width = remember { mutableIntStateOf(0) }
                 val height = remember { mutableIntStateOf(0) }
-                val count = remember { mutableIntStateOf(10) } // 10 for now, set to 0
+                val count = remember { mutableIntStateOf(1) } // 10 for now, set to 0
                 val currentCount = remember { mutableIntStateOf(1) }
 
 
-                val outputPath = "${filesDir.absolutePath}"
+                val outputPath = filesDir.absolutePath
 
                 val context = LocalContext.current
                 val thread = Thread {
@@ -98,6 +100,14 @@ class MainActivity : ComponentActivity() {
                     thread.interrupt()
                 }
                 val focusManager = LocalFocusManager.current
+                val interactionSource = remember { MutableInteractionSource() }
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            focusManager.clearFocus()
+                        }
+                    }
+                }
                 Scaffold(
                     topBar = {
                         Surface(tonalElevation = 10.dp) {
@@ -149,7 +159,8 @@ class MainActivity : ComponentActivity() {
                                     toast.show()
                                 }
 
-                            }
+                            },
+                            interactionSource = interactionSource
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = "Start")
                         }
@@ -177,10 +188,10 @@ class MainActivity : ComponentActivity() {
                             )
                             .verticalScroll(state = rememberScrollState())
                             .pointerInput(Unit) {
-                            detectTapGestures {
-                                focusManager.clearFocus()
-                            }
-                        },
+                                detectTapGestures {
+                                    focusManager.clearFocus()
+                                }
+                            },
                     )
                 }
             }
