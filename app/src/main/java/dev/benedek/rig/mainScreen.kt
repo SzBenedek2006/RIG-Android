@@ -2,14 +2,21 @@ package dev.benedek.rig
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -298,20 +305,63 @@ fun WelcomeScreenState(
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center
                 )
-                Text(text = "${quality.value}",
-                    modifier = Modifier,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
+                val animationDuration: Int = 150
+
+
+
+
+                Row {
+                    AnimatedContent(
+                        targetState = quality.value.toString()[0],
+                        transitionSpec = {
+                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.25f).using(SizeTransform(clip = false))
+                        },
+                        label = "quality value"
+                    ) { targetQuality ->
+                        Text(text = "$targetQuality",
+                            modifier = Modifier,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    AnimatedContent(
+                        targetState = if (quality.value < 10) ' ' else quality.value.toString()[1],
+                        transitionSpec = {
+                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.25f).using(SizeTransform(clip = false))
+                        },
+                        label = "quality value"
+                    ) { targetQuality ->
+                        Text(text = "$targetQuality",
+                            modifier = Modifier,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    AnimatedContent(
+                        targetState = if (quality.value < 100) ' ' else quality.value.toString()[2],
+                        transitionSpec = {
+                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.25f).using(SizeTransform(clip = false))
+                        },
+                        label = "quality value"
+                    ) { targetQuality ->
+                        Text(text = "$targetQuality",
+                            modifier = Modifier,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
+
             val haptic = LocalHapticFeedback.current
+
             Slider(
                 value = quality.value.toFloat(),
                 onValueChange = {
                     val newValue = it.roundToInt()
 
 
-                    if (quality.value % 10 == 0 && newValue != quality.value) {
+                    if (/*quality.value % 10 == 0 &&*/ newValue != quality.value) {
                         quality.value = newValue
 
                         if (quality.value != 100 && quality.value != 0) {
@@ -325,7 +375,7 @@ fun WelcomeScreenState(
                                 },
                 enabled = format.value == "JPEG",
                 valueRange = 0f..100f,
-                steps = 9,
+                steps = 99,
             )
             val toast = Toast.makeText(context, quality.value.toString(), Toast.LENGTH_SHORT)
             toast.show()

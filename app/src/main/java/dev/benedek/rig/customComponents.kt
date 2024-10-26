@@ -1,5 +1,13 @@
 package dev.benedek.rig
 
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -133,4 +141,28 @@ fun formatButton(text: String, isToggled: MutableState<Boolean>, invalidate: Mut
     }
 
 
+}
+
+fun counterAnimation(
+    initialState: Char,
+    targetState: Char,
+    animationDuration: Int,
+    heightScale: Float, // = 0.25f
+    initialAlpha: Float, // = 0.25f
+): ContentTransform {
+
+    return if (targetState < initialState && !(initialState == '9' && targetState == '0') && !(initialState == '9' && targetState == '1') ||
+        (initialState == '1' && targetState == '9') ||
+        (initialState == '0' && targetState == '9')
+    ) {
+        slideInVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> (height * heightScale).toInt() } +
+                fadeIn(animationSpec = tween(durationMillis = animationDuration / 2), initialAlpha = initialAlpha) togetherWith
+                slideOutVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> -(height * heightScale).toInt() } +
+                fadeOut(animationSpec = tween(durationMillis = animationDuration))
+    } else {
+        slideInVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> -(height * heightScale).toInt() } +
+                fadeIn(animationSpec = tween(durationMillis = animationDuration / 2), initialAlpha = initialAlpha) togetherWith
+                slideOutVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> (height * heightScale).toInt() } +
+                fadeOut(animationSpec = tween(durationMillis = animationDuration))
+    }
 }
