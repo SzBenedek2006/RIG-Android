@@ -110,11 +110,11 @@ class MainActivity : ComponentActivity() {
                 }
                 Scaffold(
                     topBar = {
-                        Surface(tonalElevation = 10.dp) {
+                        Surface {
                             TopAppBar(
                                 colors = topAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    titleContentColor = MaterialTheme.colorScheme.primary,
+                                    containerColor = MaterialTheme.colorScheme.background,
+                                    titleContentColor = MaterialTheme.colorScheme.onBackground,
                                 ),
                                 title = {
                                     Text("RIG-Android")
@@ -133,21 +133,21 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     },
-                    bottomBar = {
-                        Surface(tonalElevation = 10.dp) {
-                            BottomAppBar(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ) {
-                                Text(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    text = "Bottom app bar",
-                                )
-                            }
-                        }
-                    },
+//                    bottomBar = {
+//                        Surface(tonalElevation = 10.dp) {
+//                            BottomAppBar(
+//                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+//                                contentColor = MaterialTheme.colorScheme.primary
+//                            ) {
+//                                Text(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth(),
+//                                    textAlign = TextAlign.Center,
+//                                    text = "Bottom app bar",
+//                                )
+//                            }
+//                        }
+//                    },
                     floatingActionButton = {
                         FloatingActionButton(
                             onClick = {
@@ -183,8 +183,8 @@ class MainActivity : ComponentActivity() {
                         currentCount,
                         modifier = Modifier
                             .padding(
-                                top = innerPadding.calculateTopPadding(), // Only respect top padding
-                                bottom = innerPadding.calculateBottomPadding() // Ignore bottom padding to render behind the BottomAppBar
+                                top = innerPadding.calculateTopPadding(), // Don't render behind the top bar
+                                //bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(), // WTF?
                             )
                             .verticalScroll(state = rememberScrollState())
                             .pointerInput(Unit) {

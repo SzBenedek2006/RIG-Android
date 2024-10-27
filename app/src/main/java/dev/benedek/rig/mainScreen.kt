@@ -15,17 +15,21 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -36,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -182,9 +187,7 @@ fun RigUi(
 
         WelcomeScreenState(context, alpha, quality, format, width, height, count)
 
-
-
-
+        Spacer(Modifier.padding(50.dp))
 
 
 
@@ -418,11 +421,21 @@ fun WelcomeScreenState(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Resolution",
-                modifier = Modifier,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Text(text = "Resolution",
+                    modifier = Modifier,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                    textAlign = TextAlign.Left
+                )
+                Text(text = "Width × Height in pixels.",
+                    modifier = Modifier,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    textAlign = TextAlign.Left
+                )
+            }
             Row(
                 modifier = Modifier
                     .padding(8.dp)
@@ -439,6 +452,7 @@ fun WelcomeScreenState(
                     //placeholder = { Text(text = "enter width", modifier = Modifier.alpha(0.5F)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    shape = MaterialTheme.shapes.small,
                     modifier = Modifier
                         .requiredWidth(100.dp)
                         .padding(end = 8.dp)
@@ -454,6 +468,7 @@ fun WelcomeScreenState(
                     //placeholder = { Text(text = "enter height", modifier = Modifier.alpha(0.5F)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    shape = MaterialTheme.shapes.small,
                     modifier = Modifier
                         .requiredWidth(100.dp)
                         .padding(start = 8.dp)
@@ -471,11 +486,22 @@ fun WelcomeScreenState(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Count",
-                modifier = Modifier,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Text(text = "Number of images",
+                    modifier = Modifier,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                    textAlign = TextAlign.Left
+                )
+                Text(text = "Specify how many random images to generate",
+                    modifier = Modifier,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    textAlign = TextAlign.Left
+                )
+            }
+
             val countText = if (count.value == 0) remember { mutableStateOf("") } else remember { mutableStateOf(count.value.toString()) }
             OutlinedTextField(
                 value = countText.value,
@@ -487,9 +513,11 @@ fun WelcomeScreenState(
                 //placeholder = { Text(text = "enter width", modifier = Modifier.alpha(0.5F)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                shape = MaterialTheme.shapes.small,
                 modifier = Modifier
                     .requiredWidth(100.dp)
                     .padding(end = 8.dp)
+
             )
         }
     }

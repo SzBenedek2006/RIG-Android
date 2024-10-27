@@ -85,12 +85,12 @@ fun CustomCard(
         modifier = modifier
             //.clickable(onClick = onClick ?: {})
             .padding(8.dp),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
         tonalElevation = 2.dp,
         shadowElevation = 4.dp,
-        border = BorderStroke(2.dp, Color.Gray),
+        border = BorderStroke(1.dp, Color.Gray),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
