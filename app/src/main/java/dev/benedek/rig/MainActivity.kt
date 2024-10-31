@@ -22,6 +22,7 @@ var imagePath = emptyArray<File>()
 var runtime: Long = 0
 
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +70,7 @@ fun RigUIPreview() {
                 runtime = 0,
                 finished = false,
                 doRender = false,
+                stop = false,
                 progressPercent = remember { mutableFloatStateOf(0f) },
                 alpha = remember { mutableStateOf(false) },
                 quality = remember { mutableIntStateOf(100) },

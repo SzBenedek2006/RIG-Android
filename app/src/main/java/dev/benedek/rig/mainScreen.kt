@@ -82,12 +82,14 @@ fun MainScreen() {
     val height = remember { mutableIntStateOf(0) }
     val count = remember { mutableIntStateOf(1) } // 10 for now, set to 0
     val currentCount = remember { mutableIntStateOf(1) }
+    val stop = remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     val outputPath = context.filesDir.absolutePath
 
 
     val rigThread = Thread {
+        stop.value = false
         val firstTime = System.currentTimeMillis()
         finished.value = false
         progressPercent.floatValue = 0f
@@ -104,7 +106,8 @@ fun MainScreen() {
             quality.intValue,
             format.value,
             count.intValue,
-            currentCount
+            currentCount,
+            stop
         )
 
 
@@ -143,8 +146,7 @@ fun MainScreen() {
                     },
                     actions = {
                         IconButton(onClick = {
-                            finished.value = false
-                            doRender.value = false
+                            stop.value = true
                         }) {
                             Icon(
                                 imageVector = Icons.Sharp.Clear,
@@ -194,6 +196,7 @@ fun MainScreen() {
             runtime,
             finished.value,
             doRender.value,
+            stop.value,
             progressPercent,
             alpha,
             quality,
@@ -226,6 +229,7 @@ fun RigUi(
     runtime: Long,
     finished: Boolean,
     doRender: Boolean,
+    stop: Boolean,
     progressPercent: MutableState<Float>,
     alpha: MutableState<Boolean>,
     quality: MutableState<Int>,
@@ -302,18 +306,43 @@ fun RigUi(
                             modifier = Modifier.padding(bottom = 8.dp) // Add a little space below the title if needed
                         )
                     } else if (finished) {
-                        Text(
-                            text = "Finished!",
-                            modifier = Modifier,
-                            fontSize = 16.sp
+                        Column {
+                            if (stop) {
+                                Text(
+                                    text = "Stopped!",
+                                    modifier = Modifier,
+                                    fontSize = 16.sp
+                                )
+                            } else {
+                                Text(
+                                    text = "Finished!",
+                                    modifier = Modifier,
+                                    fontSize = 16.sp
 
-                        )
+                                )
+                            }
+
+                            Text(
+                                text = "Path: $imagePath",
+                                modifier = Modifier,
+                                fontSize = 16.sp
+                            )
+                            Text(
+                                text = "Runtime: $runtime ms",
+                                modifier = Modifier,
+                                fontSize = 16.sp
+                            )
+
+                        }
+                    } else if (stop) {
+
                         Text(
-                            text = "Path: $imagePath",
+                            text = "Runtime: $runtime ms",
                             modifier = Modifier,
                             fontSize = 16.sp
                         )
                     }
+
                     if (doRender) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
