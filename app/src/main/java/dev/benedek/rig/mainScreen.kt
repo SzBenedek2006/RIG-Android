@@ -4,20 +4,16 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,37 +21,209 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.sharp.Clear
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.pow
 import kotlin.math.roundToInt
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen() {
+    // https://developer.android.com/develop/ui/compose/components/scaffold
+
+    var presses by remember { mutableIntStateOf(0) }
+
+    val progressPercent = remember { mutableFloatStateOf(0f) }
+    val finished = remember { mutableStateOf(false) }
+    val doRender = remember { mutableStateOf(false) }
+    val alpha = remember { mutableStateOf(false) }
+    val quality = remember { mutableIntStateOf(100) }
+    val format = remember { mutableStateOf("PNG") }
+    val width = remember { mutableIntStateOf(0) }
+    val height = remember { mutableIntStateOf(0) }
+    val count = remember { mutableIntStateOf(1) } // 10 for now, set to 0
+    val currentCount = remember { mutableIntStateOf(1) }
+    val context = LocalContext.current
+
+    val outputPath = context.filesDir.absolutePath
+
+
+    val rigThread = Thread {
+        val firstTime = System.currentTimeMillis()
+        finished.value = false
+        progressPercent.floatValue = 0f
+        val rig = RIG()
+
+
+        rig.randomImageGenerator(
+            context,
+            progressPercent,
+            outputPath,
+            width.intValue,
+            height.intValue,
+            alpha.value,
+            quality.intValue,
+            format.value,
+            count.intValue,
+            currentCount
+        )
+
+
+
+        val secondTime = System.currentTimeMillis()
+        runtime = secondTime - firstTime
+        progressPercent.floatValue = 0f
+        doRender.value = false
+        finished.value = true
+    }
+
+    if (doRender.value) {
+        rigThread.start()
+    } else {
+        rigThread.interrupt()
+    }
+    val focusManager = LocalFocusManager.current
+    val interactionSource = remember { MutableInteractionSource() }
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            if (interaction is PressInteraction.Release) {
+                focusManager.clearFocus()
+            }
+        }
+    }
+    Scaffold(
+        topBar = {
+            Surface {
+                TopAppBar(
+                    colors = topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    ),
+                    title = {
+                        Text("RIG-Android")
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            finished.value = false
+                            doRender.value = false
+                        }) {
+                            Icon(
+                                imageVector = Icons.Sharp.Clear,
+                                contentDescription = "Clear images"
+                            )
+                        }
+                    }
+                )
+            }
+        },
+//                    bottomBar = {
+//                        Surface(tonalElevation = 10.dp) {
+//                            BottomAppBar(
+//                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+//                                contentColor = MaterialTheme.colorScheme.primary
+//                            ) {
+//                                Text(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth(),
+//                                    textAlign = TextAlign.Center,
+//                                    text = "Bottom app bar",
+//                                )
+//                            }
+//                        }
+//                    },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    presses++
+                    if (width.intValue > 1 || height.intValue > 1) {
+                        doRender.value = true
+                    } else {
+                        val toast = Toast.makeText(context, "Resolution is not accepted", Toast.LENGTH_SHORT)
+                        toast.show()
+                    }
+
+                },
+                interactionSource = interactionSource
+            ) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Start")
+            }
+        },
+
+        ) { innerPadding ->
+        RigUi(
+            outputPath,
+            runtime,
+            finished.value,
+            doRender.value,
+            progressPercent,
+            alpha,
+            quality,
+            format,
+            width,
+            height,
+            count,
+            currentCount,
+            modifier = Modifier
+                .padding(
+                    top = innerPadding.calculateTopPadding(), // Don't render behind the top bar
+                    //bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(), // WTF?
+                )
+                .verticalScroll(state = rememberScrollState())
+                .pointerInput(Unit) {
+                    detectTapGestures {
+                        focusManager.clearFocus()
+                    }
+                },
+        )
+    }
+}
+
+
+
 
 @Composable
 fun RigUi(
     imagePath: String,
     runtime: Long,
-    presses: Int,
     finished: Boolean,
     doRender: Boolean,
     progressPercent: MutableState<Float>,
