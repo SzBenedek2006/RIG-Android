@@ -8,7 +8,7 @@ import java.util.Random
 
 fun genBitmap(width: Int, height: Int, progressPercent: MutableState<Float>): Bitmap {
     val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565) // Alpha is first
-    var progress = 0
+    var progress = 0f
     val random = Random()
     for (x in 0 until width) {
         for (y in 0 until height) {
@@ -22,7 +22,7 @@ fun genBitmap(width: Int, height: Int, progressPercent: MutableState<Float>): Bi
 
         }
         progress++
-        progressPercent.value = (progress.toFloat() / width)
+        progressPercent.value = (progress / width)
     }
     return bitmap
 }

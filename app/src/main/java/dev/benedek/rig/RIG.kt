@@ -93,7 +93,7 @@ class RIG() {
                 Log.d("RIG", "JPEG gen interrupted")
                 return file
             }
-            
+
             currentCount.intValue = num + 1
 
             val bitmap = genBitmap(width, height, progressPercent)

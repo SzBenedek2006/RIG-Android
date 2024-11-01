@@ -155,14 +155,14 @@ fun counterAnimation(
         (initialState == '1' && targetState == '9') ||
         (initialState == '0' && targetState == '9')
     ) {
-        slideInVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> (height * heightScale).toInt() } +
+        slideInVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> (height * (heightScale/4)).toInt() } +
                 fadeIn(animationSpec = tween(durationMillis = animationDuration / 2), initialAlpha = initialAlpha) togetherWith
-                slideOutVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> -(height * heightScale).toInt() } +
-                fadeOut(animationSpec = tween(durationMillis = animationDuration))
+                slideOutVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> -(height * (heightScale*2)).toInt() } +
+                fadeOut(animationSpec = tween(durationMillis = animationDuration), targetAlpha = initialAlpha)
     } else {
-        slideInVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> -(height * heightScale).toInt() } +
+        slideInVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> -(height * (heightScale/4)).toInt() } +
                 fadeIn(animationSpec = tween(durationMillis = animationDuration / 2), initialAlpha = initialAlpha) togetherWith
-                slideOutVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> (height * heightScale).toInt() } +
+                slideOutVertically(animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)) { height -> (height * (heightScale*2)).toInt() } +
                 fadeOut(animationSpec = tween(durationMillis = animationDuration))
     }
 }

@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.sharp.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -62,13 +63,22 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavHostController) {
     // https://developer.android.com/develop/ui/compose/components/scaffold
+
+
+
+
+
 
     var presses by remember { mutableIntStateOf(0) }
 
@@ -145,13 +155,14 @@ fun MainScreen() {
                         Text("RIG-Android")
                     },
                     actions = {
-                        IconButton(onClick = {
-                            stop.value = true
-                        }) {
+                        IconButton(onClick = { stop.value = true }) {
                             Icon(
                                 imageVector = Icons.Sharp.Clear,
                                 contentDescription = "Clear images"
                             )
+                        }
+                        IconButton(onClick = { navController.navigate("settings") }) { // Navigate to settings
+                            Icon(Icons.Outlined.Settings, contentDescription = "Settings")
                         }
                     }
                 )
@@ -411,8 +422,6 @@ fun WelcomeScreenState(
                     checked.value = it
                     alpha.value = checked.value
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    val toast = Toast.makeText(context, alpha.value.toString(), Toast.LENGTH_SHORT)
-                    toast.show()
                 },
             )
         }
@@ -440,7 +449,7 @@ fun WelcomeScreenState(
                     AnimatedContent(
                         targetState = quality.value.toString()[0],
                         transitionSpec = {
-                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.25f).using(SizeTransform(clip = false))
+                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.15f).using(SizeTransform(clip = false))
                         },
                         label = "quality value"
                     ) { targetQuality ->
@@ -453,7 +462,7 @@ fun WelcomeScreenState(
                     AnimatedContent(
                         targetState = if (quality.value < 10) ' ' else quality.value.toString()[1],
                         transitionSpec = {
-                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.25f).using(SizeTransform(clip = false))
+                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.15f).using(SizeTransform(clip = false))
                         },
                         label = "quality value"
                     ) { targetQuality ->
@@ -466,7 +475,7 @@ fun WelcomeScreenState(
                     AnimatedContent(
                         targetState = if (quality.value < 100) ' ' else quality.value.toString()[2],
                         transitionSpec = {
-                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.25f).using(SizeTransform(clip = false))
+                            counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.15f).using(SizeTransform(clip = false))
                         },
                         label = "quality value"
                     ) { targetQuality ->
@@ -503,8 +512,7 @@ fun WelcomeScreenState(
                 valueRange = 0f..100f,
                 steps = 99,
             )
-            val toast = Toast.makeText(context, quality.value.toString(), Toast.LENGTH_SHORT)
-            toast.show()
+
         }
     }
 
