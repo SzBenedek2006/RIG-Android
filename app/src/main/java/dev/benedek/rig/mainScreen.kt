@@ -208,7 +208,6 @@ fun MainScreen() {
             modifier = Modifier
                 .padding(
                     top = innerPadding.calculateTopPadding(), // Don't render behind the top bar
-                    //bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(), // WTF?
                 )
                 .verticalScroll(state = rememberScrollState())
                 .pointerInput(Unit) {
@@ -265,19 +264,6 @@ fun RigUi(
                 modifier = Modifier.padding(12.dp),
                 fontSize = 16.sp
             )
-
-//            CustomCard(
-//                modifier = Modifier
-//            ) {
-//                Text(
-//                    text = "Clicks: $presses!",
-//                    modifier = Modifier,
-//                    fontSize = 16.sp
-//                )
-//
-//            }
-
-
 
         }
 
@@ -384,69 +370,9 @@ fun RigUi(
 
         WelcomeScreenState(context, alpha, quality, format, width, height, count)
 
+
+
         Spacer(Modifier.padding(50.dp))
-
-
-
-
-//        if (doRender) {
-//            Dialog(onDismissRequest = {}) {
-//                Card(
-//                    modifier = Modifier
-//                        .wrapContentSize()
-//                        .padding(16.dp),
-//                    shape = RoundedCornerShape(16.dp),
-//                ) {
-//                    Column(modifier = Modifier.padding(16.dp)) {
-//                        Text(
-//                            text = "Rendering...",
-//                            fontSize = 16.sp,
-//                            modifier = Modifier.padding(bottom = 8.dp) // Add a little space below the title if needed
-//                        )
-//                        Row(
-//                            verticalAlignment = Alignment.CenterVertically,
-//                            horizontalArrangement = Arrangement.SpaceBetween,
-//                            modifier = Modifier.fillMaxWidth()
-//                        ) {
-//                            LinearProgressIndicator(
-//                                progress = { progressPercent.value },
-//                                modifier = Modifier
-//                                    .weight(1f)
-//                                    .padding(end = 8.dp)
-//                            )
-//                            Text(
-//                                text = "${"%.2f".format(progressPercent.value * 100)}%",
-//                                modifier = Modifier.padding(start = 8.dp)
-//                            )
-//                        }
-//                        Row(
-//                            verticalAlignment = Alignment.CenterVertically,
-//                            horizontalArrangement = Arrangement.SpaceBetween,
-//                            modifier = Modifier.fillMaxWidth()
-//                        ) {
-//                            LinearProgressIndicator(
-//                                progress = { currentCount.intValue / count.intValue.toFloat() },
-//                                modifier = Modifier
-//                                    .weight(1f)
-//                                    .padding(end = 8.dp)
-//                            )
-//                            Text(
-//                                text = "${currentCount.intValue} / ${count.intValue}",
-//                                modifier = Modifier.padding(start = 8.dp)
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-
-
-
-
-
-
-
     }
 }
 
