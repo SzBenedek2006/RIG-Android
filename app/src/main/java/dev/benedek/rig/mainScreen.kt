@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -32,8 +33,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -41,7 +44,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
@@ -52,9 +57,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -67,6 +76,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
@@ -136,6 +146,9 @@ fun MainScreen(navController: NavHostController) {
     }
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
+
+
+
     LaunchedEffect(interactionSource) {
         interactionSource.interactions.collect { interaction ->
             if (interaction is PressInteraction.Release) {
@@ -143,16 +156,44 @@ fun MainScreen(navController: NavHostController) {
             }
         }
     }
+
+
+    TopAppBarDefaults.topAppBarColors()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+
+//    containerColor: Color = Color.Unspecified,
+//    scrolledContainerColor: Color = Color.Unspecified,
+//    navigationIconContentColor: Color = Color.Unspecified,
+//    titleContentColor: Color = Color.Unspecified,
+//    actionIconContentColor: Color = Color.Unspecified
+
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            Surface {
-                TopAppBar(
+            Surface(tonalElevation = 0.dp) {
+                LargeTopAppBar(
                     colors = topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
+                        scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
                     ),
                     title = {
-                        Text("RIG-Android")
+                        Text(
+                            text = "RIG-Android",
+                            textAlign = TextAlign.Left,
+                            modifier = Modifier
+                                .alpha(scrollBehavior.state.collapsedFraction.pow(8))
+                        )
+                        Text(
+                            text = "Say hello to RIG!",
+                            textAlign = TextAlign.Center,
+                            fontSize = 36.sp,
+                            modifier = Modifier
+                                .alpha((1 - scrollBehavior.state.collapsedFraction).pow(8))
+                                .fillMaxWidth()
+                        )
+
                     },
                     actions = {
                         IconButton(onClick = { stop.value = true }) {
@@ -164,7 +205,8 @@ fun MainScreen(navController: NavHostController) {
                         IconButton(onClick = { navController.navigate("settings") }) { // Navigate to settings
                             Icon(Icons.Outlined.Settings, contentDescription = "Settings")
                         }
-                    }
+                    },
+                    scrollBehavior = scrollBehavior,
                 )
             }
         },
@@ -263,13 +305,7 @@ fun RigUi(
             //verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                modifier = Modifier
-                    .padding(30.dp)
-                    .padding(top = 22.dp),
-                text = "Say hello to RIG!",
-                fontSize = 36.sp
-            )
+
             Text(
                 text = "Nice to see you here!",
                 modifier = Modifier.padding(12.dp),
