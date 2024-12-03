@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             RIGTheme(
-                darkTheme = darkMode.value
+                darkTheme = darkMode.value 
             ) {
                 MyApp()
             }
