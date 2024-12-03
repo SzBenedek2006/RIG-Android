@@ -1,6 +1,7 @@
 package dev.benedek.rig
 
 import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
@@ -35,6 +36,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -45,9 +47,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,6 +60,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+
+val darkMode = mutableStateOf(false)
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,6 +141,7 @@ fun SettingsScreen(navController: NavHostController) {
 @Composable
 fun SettingsUi(modifier: Modifier) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
 
     Column(
         modifier = modifier
@@ -145,19 +154,19 @@ fun SettingsUi(modifier: Modifier) {
             //verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                modifier = Modifier
-                    .padding(30.dp)
-                    .padding(top = 22.dp),
-                text = "This is RIG settings!",
-                lineHeight = 42.sp,
-                fontSize = 36.sp
-            )
-            Text(
-                text = "Nice to see you here too!",
-                modifier = Modifier.padding(12.dp),
-                fontSize = 16.sp
-            )
+            CustomCard {
+                Row {
+                    Text("Theme")
+
+                    Switch(
+                        checked = darkMode.value,
+                        onCheckedChange = {
+                            darkMode.value = it
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    )
+                }
+            }
 
         }
 
