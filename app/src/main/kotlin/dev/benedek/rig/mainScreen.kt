@@ -1,7 +1,9 @@
 package dev.benedek.rig
 
+import android.app.Notification
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
@@ -27,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.sharp.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,12 +75,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import android.app.NotificationManager as NotificationManager
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -687,5 +694,18 @@ fun WelcomeScreenState(
             )
         }
     }
+
+
+
+    sendNotification(context, R.drawable.rig_colored_full, "URGENTE", "Gato gato mao!")
+
+    val notificationManager: NotificationManager =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    CustomCard {
+        Text("For testing purposes:\nareNotificationsEnabled() = ${notificationManager.areNotificationsEnabled()}")
+    }
+
+
 
 }

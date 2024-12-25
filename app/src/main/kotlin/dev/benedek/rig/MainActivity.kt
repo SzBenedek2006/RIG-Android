@@ -3,11 +3,12 @@
 package dev.benedek.rig
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import android.view.ContextThemeWrapper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -25,11 +26,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.benedek.rig.ui.theme.RIGTheme
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import java.io.File
-
-
+import android.Manifest
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -44,10 +46,20 @@ val followSystemTheme = mutableStateOf( false )
 
 class MainActivity : ComponentActivity() {
     val darkThemeToggle = mutableStateOf(false)
+    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        GlobalScope.launch(Dispatchers.Default) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+
+
+        }
 
 
 
@@ -66,6 +78,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(darkThemeToggle: MutableState<Boolean>) {
     val context = LocalContext.current
+    createNotificationChannel(context)
 
     // For retrieving the state of the dark mode toggle
 
