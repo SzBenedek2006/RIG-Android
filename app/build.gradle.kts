@@ -5,14 +5,15 @@ plugins {
 
 android {
     namespace = "dev.benedek.rig"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "dev.benedek.rig"
         minSdk = 26
-        targetSdk = 34
+        //noinspection EditedTargetSdkVersion
+        targetSdk = 35
         versionCode = 1
-        versionName = "0.3.0"
+        versionName = "0.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
