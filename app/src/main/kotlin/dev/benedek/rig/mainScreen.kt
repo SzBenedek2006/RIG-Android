@@ -358,37 +358,71 @@ fun RigUi(
                         Text(
                             text = "Rendering...",
                             fontSize = 16.sp,
-                            modifier = Modifier.padding(bottom = 8.dp) // Add a little space below the title if needed
+                            modifier = Modifier.padding(bottom = 1.dp)
                         )
-                    } else if (finished) {
-                        Column {
-                            if (stop) {
-                                Text(
-                                    text = "Stopped!",
-                                    modifier = Modifier,
-                                    fontSize = 16.sp
-                                )
-                            } else {
-                                Text(
-                                    text = "Finished!",
-                                    modifier = Modifier,
-                                    fontSize = 16.sp
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            //horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
 
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(7.5f),
+                            ) {
+
+                                Progressbar( // Current pic
+                                    modifier = Modifier,
+                                    progressPercent = progressPercent.value
+                                )
+                                Spacer(Modifier.padding(10.dp))
+                                Progressbar( // All pic
+                                    modifier = Modifier,
+                                    progressPercent = currentCount.intValue / count.intValue.toFloat()
+                                )
+                            }
+                            Spacer(Modifier.padding(4.dp))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(2.5f)
+                            ) {
+                                Text(
+                                    text = "${"%.2f".format(progressPercent.value * 100)}%",
+                                )
+                                Text(
+                                    text = "${currentCount.intValue} / ${count.intValue}",
                                 )
                             }
 
-                            Text(
-                                text = "Path: $imagePath",
-                                modifier = Modifier,
-                                fontSize = 16.sp
-                            )
-                            Text(
-                                text = "Runtime: $runtime ms",
-                                modifier = Modifier,
-                                fontSize = 16.sp
-                            )
-
                         }
+
+                    } else if (finished) {
+                        if (stop) {
+                            Text(
+                                text = "Stopped!",
+                                modifier = Modifier,
+                                fontSize = 16.sp
+                            )
+                        } else {
+                            Text(
+                                text = "Finished!",
+                                modifier = Modifier,
+                                fontSize = 16.sp
+
+                            )
+                        }
+                        Text(
+                            text = "Path: $imagePath",
+                            modifier = Modifier,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "Runtime: $runtime ms",
+                            modifier = Modifier,
+                            fontSize = 16.sp
+                        )
                     } else if (stop) {
 
                         Text(
@@ -396,41 +430,6 @@ fun RigUi(
                             modifier = Modifier,
                             fontSize = 16.sp
                         )
-                    }
-
-                    if (doRender) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Progressbar(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 8.dp),
-                                progressPercent = progressPercent.value
-                            )
-                            Text(
-                                text = "${"%.2f".format(progressPercent.value * 100)}%",
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Progressbar(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 8.dp),
-                                progressPercent = currentCount.intValue / count.intValue.toFloat()
-                            )
-                            Text(
-                                text = "${currentCount.intValue} / ${count.intValue}",
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
                     }
                 }
             }
@@ -737,52 +736,44 @@ fun WelcomeScreenState(
 //            }
 //        }
 //    }
-
-    Progressbar(progressPercent = mao.value)
+// Progressbar(progressPercent = mao.value)
 
 }
 @Composable
 fun Progressbar(
     modifier: Modifier = Modifier
-        .fillMaxWidth()
-        .fillMaxHeight(),
+        .fillMaxWidth(),
     progressPercent: Float? = null
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.Center) {
-        val color: Color = MaterialTheme.colorScheme.primary
-        val backgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f)
-        val animatedProgress by animateFloatAsState(
-            targetValue = progressPercent ?: 0f, // If progresspercent == null, return 0f. Else, return progresspercent.
-            animationSpec = tween(
-                durationMillis = 500, // Duration of the animation
-                easing = LinearOutSlowInEasing // Easing function for smooth effect
-            ), label = "Progress animation"
-        )
+    val color: Color = MaterialTheme.colorScheme.primary
+    val backgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f)
+    val animatedProgress by animateFloatAsState(
+        targetValue = progressPercent ?: 0f, // If progresspercent == null, return 0f. Else, return progresspercent.
+        animationSpec = tween(
+            durationMillis = 500, // Duration of the animation
+            easing = LinearOutSlowInEasing // Easing function for smooth effect
+        ), label = "Progress animation"
+    )
 
-        Crossfade(targetState = progressPercent == null) { isIndeterminate ->
-            if (isIndeterminate) {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .padding(horizontal = 4.dp),
-                    color = color,
-                    trackColor = backgroundColor,
-                )
-            } else {
-                LinearProgressIndicator(
-                    progress = { animatedProgress},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .padding(horizontal = 4.dp),
-                    color = color,
-                    trackColor = backgroundColor,
-                )
-            }
+    Crossfade(targetState = progressPercent == null) { isIndeterminate ->
+        if (isIndeterminate) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp),
+                color = color,
+                trackColor = backgroundColor,
+            )
+        } else {
+            LinearProgressIndicator(
+                progress = { animatedProgress},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp),
+                color = color,
+                trackColor = backgroundColor,
+            )
         }
-
-
     }
 }
 
