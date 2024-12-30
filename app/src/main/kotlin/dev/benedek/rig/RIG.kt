@@ -10,7 +10,7 @@ import java.io.FileOutputStream
 
 class RIG() {
 
-    fun randomImageGenerator(context: Context, progressPercent: MutableState<Float>, outputPath: String, width: Int, height: Int, alpha: Boolean, quality: Int, format: String, count: Int, currentCount: MutableIntState, stop: MutableState<Boolean>): Array<File> {
+    fun randomImageGenerator(context: Context, progressPercent: MutableState<Float?>, outputPath: String, width: Int, height: Int, alpha: Boolean, quality: Int, format: String, count: Int, currentCount: MutableIntState, stop: MutableState<Boolean>): Array<File> {
 
         var imagePaths = emptyArray<File>()
 
@@ -36,7 +36,7 @@ class RIG() {
         width: Int,
         height: Int,
         outputPath: String,
-        progressPercent: MutableState<Float>,
+        progressPercent: MutableState<Float?>,
         alpha: Boolean,
         count: Int,
         currentCount: MutableIntState,
@@ -60,6 +60,7 @@ class RIG() {
             } else {
                 genBitmap(width, height, progressPercent)
             }
+            progressPercent.value = null
 
             file[num] = File("${outputPath}/image${num+1}.$format")
 
@@ -76,7 +77,7 @@ class RIG() {
         width: Int,
         height: Int,
         outputPath: String,
-        progressPercent: MutableState<Float>,
+        progressPercent: MutableState<Float?>,
         quality: Int,
         count: Int,
         currentCount: MutableIntState,
@@ -97,6 +98,7 @@ class RIG() {
             currentCount.intValue = num + 1
 
             val bitmap = genBitmap(width, height, progressPercent)
+            progressPercent.value = null
 
             file[num] = File("${outputPath}/image${num+1}.$format")
 

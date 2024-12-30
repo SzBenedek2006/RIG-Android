@@ -114,7 +114,8 @@ fun MainScreen(navController: NavHostController) {
 
     var presses by remember { mutableIntStateOf(0) }
 
-    val progressPercent = remember { mutableFloatStateOf(0f) }
+    val progressPercent = remember { mutableStateOf<Float?>(null) }
+
     val finished = remember { mutableStateOf(false) }
     val doRender = remember { mutableStateOf(false) }
     val alpha = remember { mutableStateOf(false) }
@@ -134,7 +135,7 @@ fun MainScreen(navController: NavHostController) {
         stop.value = false
         val firstTime = System.currentTimeMillis()
         finished.value = false
-        progressPercent.floatValue = 0f
+        progressPercent.value = 0f
         val rig = RIG()
 
 
@@ -156,7 +157,7 @@ fun MainScreen(navController: NavHostController) {
 
         val secondTime = System.currentTimeMillis()
         runtime = secondTime - firstTime
-        progressPercent.floatValue = 0f
+        progressPercent.value = 0f
         doRender.value = false
         finished.value = true
     }
@@ -304,7 +305,7 @@ fun RigUi(
     finished: Boolean,
     doRender: Boolean,
     stop: Boolean,
-    progressPercent: MutableState<Float>,
+    progressPercent: MutableState<Float?>,
     alpha: MutableState<Boolean>,
     quality: MutableState<Int>,
     format: MutableState<String>,
@@ -389,7 +390,7 @@ fun RigUi(
                                     .weight(2.5f)
                             ) {
                                 Text(
-                                    text = "${"%.2f".format(progressPercent.value * 100)}%",
+                                    text = "${"%.2f".format(if (progressPercent.value != null) progressPercent.value!! * 100f else 100f)}%",
                                 )
                                 Text(
                                     text = "${currentCount.intValue} / ${count.intValue}",

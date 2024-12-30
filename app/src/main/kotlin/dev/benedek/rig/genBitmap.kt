@@ -6,7 +6,7 @@ import androidx.compose.runtime.MutableState
 import java.util.Random
 
 
-fun genBitmap(width: Int, height: Int, progressPercent: MutableState<Float>): Bitmap {
+fun genBitmap(width: Int, height: Int, progressPercent: MutableState<Float?>): Bitmap {
     val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565) // Alpha is first
     var progress = 0f
     val random = Random()
