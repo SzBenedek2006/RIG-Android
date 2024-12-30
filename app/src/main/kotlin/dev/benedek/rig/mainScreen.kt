@@ -252,10 +252,10 @@ fun MainScreen(navController: NavHostController) {
             FloatingActionButton(
                 onClick = {
                     presses++
-                    if (width.intValue > 1 || height.intValue > 1) {
+                    if (width.intValue > 0 && height.intValue > 0 && count.intValue > 0) {
                         doRender.value = true
                     } else {
-                        val toast = Toast.makeText(context, "Resolution is not accepted", Toast.LENGTH_SHORT)
+                        val toast = Toast.makeText(context, "Resolution or count is too small. Set to at least 1!", Toast.LENGTH_SHORT)
                         toast.show()
                     }
 
