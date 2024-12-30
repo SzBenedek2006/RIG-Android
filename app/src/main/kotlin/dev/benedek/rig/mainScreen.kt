@@ -2,29 +2,41 @@ package dev.benedek.rig
 
 import android.app.Notification
 import android.content.Context
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -52,6 +64,7 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -64,6 +77,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -73,6 +87,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -82,6 +97,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import android.app.NotificationManager as NotificationManager
@@ -388,11 +404,11 @@ fun RigUi(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            LinearProgressIndicator(
-                                progress = { progressPercent.value },
+                            Progressbar(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(end = 8.dp)
+                                    .padding(end = 8.dp),
+                                progressPercent = progressPercent.value
                             )
                             Text(
                                 text = "${"%.2f".format(progressPercent.value * 100)}%",
@@ -404,11 +420,11 @@ fun RigUi(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            LinearProgressIndicator(
-                                progress = { currentCount.intValue / count.intValue.toFloat() },
+                            Progressbar(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(end = 8.dp)
+                                    .padding(end = 8.dp),
+                                progressPercent = currentCount.intValue / count.intValue.toFloat()
                             )
                             Text(
                                 text = "${currentCount.intValue} / ${count.intValue}",
@@ -706,6 +722,70 @@ fun WelcomeScreenState(
         Text("For testing purposes:\nareNotificationsEnabled() = ${notificationManager.areNotificationsEnabled()}")
     }
 
+//    var shouldStop = false
+//    var mao: MutableState<Float?> = remember { mutableStateOf<Float?>(null) }
+//    LaunchedEffect(Unit) {
+//        delay(2000)
+//        mao.value = 0f
+//
+//        while (!shouldStop) {
+//            delay(1000)
+//            mao.value = mao.value!! + 0.1f
+//            if (mao.value == 1f) {
+//                mao.value = 0f
+//                delay(10)
+//            }
+//        }
+//    }
 
+    Progressbar(progressPercent = mao.value)
 
 }
+@Composable
+fun Progressbar(
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .fillMaxHeight(),
+    progressPercent: Float? = null
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.Center) {
+        val color: Color = MaterialTheme.colorScheme.primary
+        val backgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f)
+        val animatedProgress by animateFloatAsState(
+            targetValue = progressPercent ?: 0f, // If progresspercent == null, return 0f. Else, return progresspercent.
+            animationSpec = tween(
+                durationMillis = 500, // Duration of the animation
+                easing = LinearOutSlowInEasing // Easing function for smooth effect
+            ), label = "Progress animation"
+        )
+
+        Crossfade(targetState = progressPercent == null) { isIndeterminate ->
+            if (isIndeterminate) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .padding(horizontal = 4.dp),
+                    color = color,
+                    trackColor = backgroundColor,
+                )
+            } else {
+                LinearProgressIndicator(
+                    progress = { animatedProgress},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .padding(horizontal = 4.dp),
+                    color = color,
+                    trackColor = backgroundColor,
+                )
+            }
+        }
+
+
+    }
+}
+
+
+
+
