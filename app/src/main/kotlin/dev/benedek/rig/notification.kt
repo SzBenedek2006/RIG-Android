@@ -51,7 +51,7 @@ fun sendNotification(
         val notificationId = 1 // Unique ID for the notification
 
         val notification = NotificationCompat.Builder(context, "mao")
-            .setSmallIcon(R.drawable.ic_launcher_monocrome_foreground) // Use a valid drawable resource ID here
+            .setSmallIcon(R.drawable.ic_launcher_monocrome) // Use a valid drawable resource ID here
             .setContentTitle("Maaao!")
             .setContentText("Heyho!")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

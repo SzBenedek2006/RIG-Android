@@ -28,6 +28,8 @@ import dev.benedek.rig.ui.theme.RIGTheme
 import kotlinx.coroutines.flow.Flow
 import java.io.File
 import android.Manifest
+import android.content.res.Resources
+import android.window.SplashScreen
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -52,6 +54,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+
         GlobalScope.launch(Dispatchers.Default) {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -69,6 +73,14 @@ class MainActivity : ComponentActivity() {
                 darkTheme = darkThemeToggle.value,
                 dynamicColor = dynamicColorToggle.value
             ) {
+                val context = LocalContext.current
+                val darkModeFlow: Flow<Boolean> = remember { restoreThemeToggle(context = context) }
+
+                darkThemeToggle.value = darkModeFlow.collectAsState(initial = true).value // only works with the same value as initialised in mutablestate
+
+                if (followSystemTheme.value) {
+                    darkThemeToggle.value = isSystemInDarkTheme()
+                }
                 MyApp(darkThemeToggle)
             }
         }
@@ -83,13 +95,7 @@ fun MyApp(darkThemeToggle: MutableState<Boolean>) {
     // For retrieving the state of the dark mode toggle
 
 
-    val darkModeFlow: Flow<Boolean> = remember { restoreThemeToggle(context = context) }
 
-    darkThemeToggle.value = darkModeFlow.collectAsState(initial = true).value // only works with the same value as initialised in mutablestate
-
-    if (followSystemTheme.value) {
-        darkThemeToggle.value = isSystemInDarkTheme()
-    }
 
 
     val navController = rememberNavController()
