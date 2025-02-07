@@ -40,10 +40,11 @@ fun createNotificationChannel(
 
 fun sendNotification(
     context: Context,
-    icon: Int,
+    icon: Int = R.drawable.ic_launcher_monocrome,
     title: String,
     text: String,
-    priority: Int = NotificationCompat.PRIORITY_DEFAULT
+    priority: Int = NotificationManager.IMPORTANCE_DEFAULT,
+    isSilent: Boolean = false
 ) {
 
     GlobalScope.launch(Dispatchers.Default) {
@@ -55,6 +56,7 @@ fun sendNotification(
             .setContentTitle(title)
             .setContentText(text)
             .setPriority(priority)
+            .setSilent(isSilent)
             .build()
 
         val notificationManager = context.getSystemService<NotificationManager>()

@@ -8,12 +8,21 @@ import androidx.compose.runtime.MutableState
 import java.io.File
 import java.io.FileOutputStream
 
-class RIG() {
+class RIG {
 
     fun randomImageGenerator(context: Context, progressPercent: MutableState<Float?>, outputPath: String, width: Int, height: Int, alpha: Boolean, quality: Int, format: String, count: Int, currentCount: MutableIntState, stop: MutableState<Boolean>): Array<File> {
 
         var imagePaths = emptyArray<File>()
 
+        val notificationThread = Thread {
+            do {
+                sendNotification(context = context, title = "Generating image...", text = "${progressPercent.value?.times(100)}%", isSilent = true)
+                Log.d("RIG", "sendNotification triggered")
+                Thread.sleep(500)
+            } while (progressPercent.value != null && imagePaths.contentEquals(emptyArray<File>()))
+            sendNotification(context = context, title = "Finished rendering.", text = "")
+
+        }.start()
 
         // For loop and list for files. (to handle count and generate multiple images.)
         if (format == "PNG"){
