@@ -713,7 +713,7 @@ fun WelcomeScreenState(
 
 
 
-    sendNotification(context, R.drawable.rig_colored_full, "URGENTE", "Gato gato mao!")
+    //sendNotification(context, R.drawable.ic_launcher_monocrome, "Maaao", "Heyho", NotificationCompat.PRIORITY_MIN) // Test notification
 
     val notificationManager: NotificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
