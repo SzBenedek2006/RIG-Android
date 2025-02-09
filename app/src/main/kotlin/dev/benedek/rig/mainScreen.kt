@@ -1,29 +1,23 @@
 package dev.benedek.rig
 
-import android.app.Notification
 import android.content.Context
-import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,15 +27,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.sharp.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,33 +41,27 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -87,20 +71,17 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.delay
+
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import android.app.NotificationManager as NotificationManager
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,7 +90,7 @@ fun MainScreen(navController: NavHostController) {
     // https://developer.android.com/develop/ui/compose/components/scaffold
 
 
-
+    val mainScreenViewModel = viewModel<MainScreenViewModel>()
 
 
     var presses by remember { mutableIntStateOf(0) }
@@ -145,7 +126,7 @@ fun MainScreen(navController: NavHostController) {
             outputPath,
             width.intValue,
             height.intValue,
-            alpha.value,
+            mainScreenViewModel.alphaState,
             quality.intValue,
             format.value,
             count.intValue,
@@ -291,6 +272,7 @@ fun MainScreen(navController: NavHostController) {
                         focusManager.clearFocus()
                     }
                 },
+            mainScreenViewModel
         )
     }
 }
@@ -313,8 +295,10 @@ fun RigUi(
     height: MutableIntState,
     count: MutableIntState,
     currentCount: MutableIntState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    mainScreenViewModel: MainScreenViewModel
 ) {
+
     val context = LocalContext.current
 
     Column(
@@ -437,7 +421,7 @@ fun RigUi(
         }
 
 
-        WelcomeScreenState(context, alpha, quality, format, width, height, count)
+        WelcomeScreenState(context, alpha, quality, format, width, height, count, mainScreenViewModel = mainScreenViewModel)
 
 
 
@@ -454,8 +438,9 @@ fun WelcomeScreenState(
     width: MutableState<Int>,
     height: MutableState<Int>,
     count: MutableState<Int>,
+    mainScreenViewModel: MainScreenViewModel
 ){
-    val checked = remember { mutableStateOf(false) }
+
     Text(
         text = "Press start button, to begin rendering.",
         modifier = Modifier,
@@ -473,12 +458,12 @@ fun WelcomeScreenState(
                 textAlign = TextAlign.Center
             )
             val haptic = LocalHapticFeedback.current
+
             Switch(
-                checked = checked.value,
+                checked = mainScreenViewModel.alphaState,
                 enabled = format.value == "PNG",
                 onCheckedChange = {
-                    checked.value = it
-                    alpha.value = checked.value
+                    mainScreenViewModel.toggleAlphaSwitch(it)
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 },
             )
