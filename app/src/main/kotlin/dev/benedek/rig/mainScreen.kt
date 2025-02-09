@@ -337,7 +337,7 @@ fun RigUi(
 
         }
 
-        val visible = remember {mutableStateOf(false)}
+        val visible = remember { mutableStateOf(false) }
 
         if (finished || doRender) {
             visible.value = true
