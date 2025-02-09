@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 
 class MainScreenViewModel: ViewModel() {
-    var alphaState by mutableStateOf(true)
+    var alphaState by mutableStateOf(false)
         private set
 
     fun toggleAlphaSwitch(isOn: Boolean) {
