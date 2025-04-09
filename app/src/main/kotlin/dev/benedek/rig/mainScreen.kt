@@ -52,13 +52,9 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -73,7 +69,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.navigation.NavHostController
@@ -93,57 +88,35 @@ fun MainScreen(navController: NavHostController) {
     val mainScreenViewModel = viewModel<MainScreenViewModel>()
 
 
-    var presses by remember { mutableIntStateOf(0) }
-
-    val progressPercent = remember { mutableStateOf<Float?>(null) }
-
-    val finished = remember { mutableStateOf(false) }
-    val doRender = remember { mutableStateOf(false) }
-    val alpha = remember { mutableStateOf(false) }
-    val quality = remember { mutableIntStateOf(100) }
-    val format = remember { mutableStateOf("PNG") }
-    val width = remember { mutableIntStateOf(0) }
-    val height = remember { mutableIntStateOf(0) }
-    val count = remember { mutableIntStateOf(1) } // 10 for now, set to 0
-    val currentCount = remember { mutableIntStateOf(1) }
-    val stop = remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     val outputPath = context.filesDir.absolutePath
 
 
     val rigThread = Thread {
-        stop.value = false
+        mainScreenViewModel.updateStop(false)
         val firstTime = System.currentTimeMillis()
-        finished.value = false
-        progressPercent.value = 0f
+        mainScreenViewModel.updateFinished(false)
+        mainScreenViewModel.updateProgressPercent(0f)
         val rig = RIG()
 
 
         rig.randomImageGenerator(
             context,
-            progressPercent,
+            mainScreenViewModel,
             outputPath,
-            width.intValue,
-            height.intValue,
-            mainScreenViewModel.alphaState,
-            quality.intValue,
-            format.value,
-            count.intValue,
-            currentCount,
-            stop
         )
 
 
 
         val secondTime = System.currentTimeMillis()
         runtime = secondTime - firstTime
-        progressPercent.value = 0f
-        doRender.value = false
-        finished.value = true
+        mainScreenViewModel.updateProgressPercent(0f)
+        mainScreenViewModel.updateDoRender(false)
+        mainScreenViewModel.updateFinished(true)
     }
 
-    if (doRender.value) {
+    if (mainScreenViewModel.doRender) {
         rigThread.start()
     } else {
         rigThread.interrupt()
@@ -200,13 +173,13 @@ fun MainScreen(navController: NavHostController) {
 
                     },
                     actions = {
-                        IconButton(onClick = { stop.value = true }) {
+                        IconButton(onClick = { mainScreenViewModel.updateStop(true) }) {
                             Icon(
                                 imageVector = Icons.Sharp.Clear,
                                 contentDescription = "Clear images"
                             )
                         }
-                        IconButton(onClick = { navController.navigate("settings") }) { // Navigate to settings
+                        IconButton(onClick = { navController.navigate(Screen.Settings.route) } ) { // Navigate to settings
                             Icon(Icons.Outlined.Settings, contentDescription = "Settings")
                         }
                     },
@@ -232,9 +205,9 @@ fun MainScreen(navController: NavHostController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    presses++
-                    if (width.intValue > 0 && height.intValue > 0 && count.intValue > 0) {
-                        doRender.value = true
+                    mainScreenViewModel.incrementPresses()
+                    if (mainScreenViewModel.width > 0 && mainScreenViewModel.height > 0 && mainScreenViewModel.count > 0) {
+                        mainScreenViewModel.updateDoRender(true)
                     } else {
                         val toast = Toast.makeText(context, "Resolution or count is too small. Set to at least 1!", Toast.LENGTH_SHORT)
                         toast.show()
@@ -251,17 +224,9 @@ fun MainScreen(navController: NavHostController) {
         RigUi(
             outputPath,
             runtime,
-            finished.value,
-            doRender.value,
-            stop.value,
-            progressPercent,
-            alpha,
-            quality,
-            format,
-            width,
-            height,
-            count,
-            currentCount,
+            mainScreenViewModel.finished,
+            mainScreenViewModel.doRender,
+            mainScreenViewModel.stop,
             modifier = Modifier
                 .padding(
                     top = innerPadding.calculateTopPadding(), // Don't render behind the top bar
@@ -287,14 +252,6 @@ fun RigUi(
     finished: Boolean,
     doRender: Boolean,
     stop: Boolean,
-    progressPercent: MutableState<Float?>,
-    alpha: MutableState<Boolean>,
-    quality: MutableState<Int>,
-    format: MutableState<String>,
-    width: MutableIntState,
-    height: MutableIntState,
-    count: MutableIntState,
-    currentCount: MutableIntState,
     modifier: Modifier = Modifier,
     mainScreenViewModel: MainScreenViewModel
 ) {
@@ -359,12 +316,12 @@ fun RigUi(
 
                                 Progressbar( // Current pic
                                     modifier = Modifier,
-                                    progressPercent = progressPercent.value
+                                    progressPercent = mainScreenViewModel.progressPercent
                                 )
                                 Spacer(Modifier.padding(10.dp))
                                 Progressbar( // All pic
                                     modifier = Modifier,
-                                    progressPercent = currentCount.intValue / count.intValue.toFloat()
+                                    progressPercent = mainScreenViewModel.currentCount / mainScreenViewModel.count.toFloat()
                                 )
                             }
                             Spacer(Modifier.padding(4.dp))
@@ -374,10 +331,10 @@ fun RigUi(
                                     .weight(2.5f)
                             ) {
                                 Text(
-                                    text = "${"%.2f".format(if (progressPercent.value != null) progressPercent.value!! * 100f else 100f)}%",
+                                    text = "${"%.2f".format(if (mainScreenViewModel.progressPercent != null) mainScreenViewModel.progressPercent!! * 100f else 100f)}%",
                                 )
                                 Text(
-                                    text = "${currentCount.intValue} / ${count.intValue}",
+                                    text = "${mainScreenViewModel.currentCount} / ${mainScreenViewModel.count}",
                                 )
                             }
 
@@ -421,7 +378,10 @@ fun RigUi(
         }
 
 
-        WelcomeScreenState(context, alpha, quality, format, width, height, count, mainScreenViewModel = mainScreenViewModel)
+        WelcomeScreenState(
+            context,
+            mainScreenViewModel = mainScreenViewModel
+        )
 
 
 
@@ -432,12 +392,6 @@ fun RigUi(
 @Composable
 fun WelcomeScreenState(
     context: Context,
-    alpha: MutableState<Boolean>,
-    quality: MutableState<Int>,
-    format: MutableState<String>,
-    width: MutableState<Int>,
-    height: MutableState<Int>,
-    count: MutableState<Int>,
     mainScreenViewModel: MainScreenViewModel
 ){
 
@@ -461,7 +415,7 @@ fun WelcomeScreenState(
 
             Switch(
                 checked = mainScreenViewModel.alphaState,
-                enabled = format.value == "PNG",
+                enabled = mainScreenViewModel.format == "PNG",
                 onCheckedChange = {
                     mainScreenViewModel.toggleAlphaSwitch(it)
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -490,7 +444,7 @@ fun WelcomeScreenState(
 
                 Row {
                     AnimatedContent(
-                        targetState = quality.value.toString()[0],
+                        targetState = mainScreenViewModel.quality.toString()[0],
                         transitionSpec = {
                             counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.15f).using(SizeTransform(clip = false))
                         },
@@ -503,7 +457,7 @@ fun WelcomeScreenState(
                         )
                     }
                     AnimatedContent(
-                        targetState = if (quality.value < 10) ' ' else quality.value.toString()[1],
+                        targetState = if (mainScreenViewModel.quality < 10) ' ' else mainScreenViewModel.quality.toString()[1],
                         transitionSpec = {
                             counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.15f).using(SizeTransform(clip = false))
                         },
@@ -516,7 +470,7 @@ fun WelcomeScreenState(
                         )
                     }
                     AnimatedContent(
-                        targetState = if (quality.value < 100) ' ' else quality.value.toString()[2],
+                        targetState = if (mainScreenViewModel.quality < 100) ' ' else mainScreenViewModel.quality.toString()[2],
                         transitionSpec = {
                             counterAnimation(initialState, targetState, animationDuration, 0.15f, 0.15f).using(SizeTransform(clip = false))
                         },
@@ -534,15 +488,15 @@ fun WelcomeScreenState(
             val haptic = LocalHapticFeedback.current
 
             Slider(
-                value = quality.value.toFloat(),
+                value = mainScreenViewModel.quality.toFloat(),
                 onValueChange = {
                     val newValue = it.roundToInt()
 
 
-                    if (/*quality.value % 10 == 0 &&*/ newValue != quality.value) {
-                        quality.value = newValue
+                    if (/*mainScreenViewModel.quality % 10 == 0 &&*/ newValue != mainScreenViewModel.quality) {
+                        mainScreenViewModel.updateQuality(newValue)
 
-                        if (quality.value != 100 && quality.value != 0) {
+                        if (mainScreenViewModel.quality != 100 && mainScreenViewModel.quality != 0) {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         } else {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -551,7 +505,7 @@ fun WelcomeScreenState(
 
 
                                 },
-                enabled = format.value == "JPEG",
+                enabled = mainScreenViewModel.format == "JPEG",
                 valueRange = 0f..100f,
                 steps = 99,
             )
@@ -571,14 +525,14 @@ fun WelcomeScreenState(
                 textAlign = TextAlign.Center
             )
             Row {
-                val pngToggled = if (format.value == "PNG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
-                val jpegToggled = if (format.value == "JPEG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
+                val pngToggled = if (mainScreenViewModel.format == "PNG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
+                val jpegToggled = if (mainScreenViewModel.format == "JPEG") remember { mutableStateOf(true) } else remember { mutableStateOf(false) }
 
 
                 formatButton("PNG", pngToggled, jpegToggled, Modifier.padding(3.dp))
                 formatButton("JPEG", jpegToggled, pngToggled, Modifier.padding(3.dp))
 
-                format.value = if (pngToggled.value) "PNG" else if (jpegToggled.value) "JPEG" else ""
+                mainScreenViewModel.setFormatTo(if (pngToggled.value) "PNG" else if (jpegToggled.value) "JPEG" else "")
 
             }
 
@@ -615,12 +569,12 @@ fun WelcomeScreenState(
                     .padding(8.dp)
             ) {
 
-                val widthText = if (width.value == 0) remember { mutableStateOf("") } else remember { mutableStateOf(width.value.toString()) }
+                val widthText = if (mainScreenViewModel.width == 0) remember { mutableStateOf("") } else remember { mutableStateOf(mainScreenViewModel.width.toString()) }
                 OutlinedTextField(
                     value = widthText.value,
                     onValueChange = {newWidth ->
                         widthText.value = newWidth // For correct preview
-                        width.value = newWidth.toIntOrNull() ?: 0
+                        mainScreenViewModel.updateWidth(newWidth.toIntOrNull() ?: 0)
                     },
                     label = { Text("width") },
                     //placeholder = { Text(text = "enter width", modifier = Modifier.alpha(0.5F)) },
@@ -631,12 +585,12 @@ fun WelcomeScreenState(
                         .requiredWidth(100.dp)
                         .padding(end = 8.dp)
                 )
-                val heightText = if (height.value == 0) remember { mutableStateOf("") } else remember { mutableStateOf(height.value.toString()) }
+                val heightText = if (mainScreenViewModel.height == 0) remember { mutableStateOf("") } else remember { mutableStateOf(mainScreenViewModel.height.toString()) }
                 OutlinedTextField(
                     value = heightText.value,
                     onValueChange = {newHeight ->
                         heightText.value = newHeight // For correct preview
-                        height.value = newHeight.toIntOrNull() ?: 0
+                        mainScreenViewModel.updateHeight(newHeight.toIntOrNull() ?: 0)
                     },
                     label = { Text("height") },
                     //placeholder = { Text(text = "enter height", modifier = Modifier.alpha(0.5F)) },
@@ -676,12 +630,12 @@ fun WelcomeScreenState(
                 )
             }
 
-            val countText = if (count.value == 0) remember { mutableStateOf("") } else remember { mutableStateOf(count.value.toString()) }
+            val countText = if (mainScreenViewModel.count == 0) remember { mutableStateOf("") } else remember { mutableStateOf(mainScreenViewModel.count.toString()) }
             OutlinedTextField(
                 value = countText.value,
                 onValueChange = {newCount ->
                     countText.value = newCount // For correct preview
-                    count.value = newCount.toIntOrNull() ?: 0
+                    mainScreenViewModel.updateCount(newCount.toIntOrNull() ?: 0)
                 },
                 label = { Text("count") },
                 //placeholder = { Text(text = "enter width", modifier = Modifier.alpha(0.5F)) },
@@ -707,23 +661,6 @@ fun WelcomeScreenState(
         Text("For testing purposes:\nareNotificationsEnabled() = ${notificationManager.areNotificationsEnabled()}")
     }
 
-//    var shouldStop = false
-//    var mao: MutableState<Float?> = remember { mutableStateOf<Float?>(null) }
-//    LaunchedEffect(Unit) {
-//        delay(2000)
-//        mao.value = 0f
-//
-//        while (!shouldStop) {
-//            delay(1000)
-//            mao.value = mao.value!! + 0.1f
-//            if (mao.value == 1f) {
-//                mao.value = 0f
-//                delay(10)
-//            }
-//        }
-//    }
-// Progressbar(progressPercent = mao.value)
-
 }
 @Composable
 fun Progressbar(
@@ -736,7 +673,7 @@ fun Progressbar(
     val animatedProgress by animateFloatAsState(
         targetValue = progressPercent ?: 0f, // If progresspercent == null, return 0f. Else, return progresspercent.
         animationSpec = tween(
-            durationMillis = 500, // Duration of the animation
+            durationMillis = 250, // Duration of the animation
             easing = LinearOutSlowInEasing // Easing function for smooth effect
         ), label = "Progress animation"
     )

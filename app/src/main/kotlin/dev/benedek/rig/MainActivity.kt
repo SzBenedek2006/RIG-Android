@@ -53,56 +53,81 @@ class MainActivity : ComponentActivity() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
-
-
-        GlobalScope.launch(Dispatchers.Default) {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
 
 
-        enableEdgeToEdge()
         setContent {
-            RIGTheme(
-                darkTheme = darkThemeToggle.value,
-                dynamicColor = dynamicColorToggle.value
-            ) {
-                val context = LocalContext.current
-                val darkModeFlow: Flow<Boolean> = remember { restoreThemeToggle(context = context) }
-
-                darkThemeToggle.value = darkModeFlow.collectAsState(initial = true).value // only works with the same value as initialised in mutablestate
-
-                if (followSystemTheme.value) {
-                    darkThemeToggle.value = isSystemInDarkTheme()
-                }
-                MyApp(darkThemeToggle)
+            AppTheme {
+                AppNavigation(
+                    darkThemeToggle = darkThemeToggle
+                )
             }
         }
     }
 }
+// new composables starts here
+@Composable
+fun AppTheme(content: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val darkTheme = rememberThemeState(context)
+
+    RIGTheme(
+        darkTheme = darkTheme.value,
+        dynamicColor = dynamicColorToggle.value
+    ) {
+        content()
+    }
+}
+
+// 5. Simplified theme state management
+@Composable
+fun rememberThemeState(context: Context): MutableState<Boolean> {
+    val darkTheme = remember { mutableStateOf(false) }
+    val darkModeFlow = remember { restoreThemeToggle(context) }
+
+    LaunchedEffect(darkModeFlow) {
+        darkModeFlow.collect { darkTheme.value = it }
+    }
+
+    if (followSystemTheme.value) {
+        darkTheme.value = isSystemInDarkTheme()
+    }
+
+    return darkTheme
+}
+
+
+// new composables end here
+
+
+
 
 @Composable
-fun MyApp(darkThemeToggle: MutableState<Boolean>) {
+fun AppNavigation(darkThemeToggle: MutableState<Boolean>) {
     val context = LocalContext.current
     createNotificationChannel(context)
 
     // For retrieving the state of the dark mode toggle
-
-
-
-
-
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "main") {
-        composable("main") { MainScreen(navController) }
-        composable("settings") { SettingsScreen(navController, darkThemeToggle) } // Settings Screen
+
+
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Main.route
+    ) {
+        composable(Screen.Main.route) {
+            MainScreen(navController)
+        }
+        composable(Screen.Settings.route) {
+            SettingsScreen(navController, darkThemeToggle)
+        }
     }
+
 }
 
 

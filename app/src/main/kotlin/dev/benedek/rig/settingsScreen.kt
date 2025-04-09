@@ -76,82 +76,57 @@ fun restoreThemeToggle(context: Context) = context.dataStore.data.map { preferen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavHostController, darkThemeToggle: MutableState<Boolean>) {
-    //val context = LocalContext.current
-
-    val transitionState = remember { MutableTransitionState(false) }
-    LaunchedEffect(Unit) {
-        transitionState.targetState = true // Trigger animation when the screen is displayed
-    }
-
-
-    val backStackEntry = navController.currentBackStackEntryAsState()
-
-    // Trigger exit animation on back navigation
-    if (backStackEntry.value?.destination?.route != "settings") {
-        transitionState.targetState = false
-    }
-
-
-
-
+fun SettingsScreen(
+    navController: NavHostController,
+    darkThemeToggle: MutableState<Boolean>
+) {
 
 
 
     val focusManager = LocalFocusManager.current
 
-    AnimatedVisibility(
-        visibleState = transitionState,
-        enter = slideInHorizontally(
-            animationSpec = tween(durationMillis = 300),
-            initialOffsetX = { it } // Start from right
-        ),
-        exit = slideOutHorizontally(
-            animationSpec = tween(durationMillis = 300),
-            targetOffsetX = { it } // Slide out to the right
-        )
-    ) {
-        Scaffold(
-            topBar = {
-                Surface {
-                    TopAppBar(
-                        colors = topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        ),
-                        title = {
-                            Text("Settings")
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.popBackStack() }) { // Navigate to settings
-                                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back button")
-                            }
-                        }
-                    )
-                }
-            },
-
-
-
-            ) { innerPadding ->
-            SettingsUi(
-                modifier = Modifier
-                    .padding(
-                        top = innerPadding.calculateTopPadding(), // Don't render behind the top bar
-                    )
-                    .verticalScroll(state = rememberScrollState())
-                    .pointerInput(Unit) {
-                        detectTapGestures {
-                            focusManager.clearFocus()
-                        }
+    Scaffold(
+        topBar = {
+            Surface {
+                TopAppBar(
+                    colors = topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    ),
+                    title = {
+                        Text("Settings")
                     },
-                darkThemeToggle
-            )
-        }
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { // Navigate to settings
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back button")
+                        }
+                    }
+                )
+            }
+        },
+
+
+
+        ) { innerPadding ->
+        SettingsUi(
+            modifier = Modifier
+                .padding(
+                    top = innerPadding.calculateTopPadding(), // Don't render behind the top bar
+                )
+                .verticalScroll(state = rememberScrollState())
+                .pointerInput(Unit) {
+                    detectTapGestures {
+                        focusManager.clearFocus()
+                    }
+                },
+            darkThemeToggle
+        )
     }
 
-
 }
+
+
+
 
 @Composable
 fun SettingsUi(modifier: Modifier, darkThemeToggle: MutableState<Boolean>) {

@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
+
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -14,7 +16,7 @@ android {
         //noinspection EditedTargetSdkVersion
         targetSdk = 35
         versionCode = 1
-        versionName = "0.4.0"
+        versionName = "0.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -73,4 +75,5 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.material3)
 
+    implementation(libs.kotlinx.serialization.json)
 }

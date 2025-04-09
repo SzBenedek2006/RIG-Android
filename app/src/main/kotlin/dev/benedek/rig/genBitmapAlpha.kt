@@ -2,16 +2,17 @@ package dev.benedek.rig
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import androidx.compose.runtime.MutableState
 import java.util.Random
+import androidx.core.graphics.set
+import androidx.core.graphics.createBitmap
 
 
-fun genBitmapAlpha(width: Int, height: Int, progressPercent: MutableState<Float?>): Bitmap {
-    val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) // Alpha is first
+fun genBitmapAlpha(mainScreenViewModel: MainScreenViewModel): Bitmap {
+    val bitmap: Bitmap = createBitmap(mainScreenViewModel.width, mainScreenViewModel.height) // Alpha is first
     var progress = 0
     val random = Random()
-    for (x in 0 until width) {
-        for (y in 0 until height) {
+    for (x in 0 until mainScreenViewModel.width) {
+        for (y in 0 until mainScreenViewModel.height) {
             // Generate random colors (without alpha for RGB_565)
             val randomColor = Color.argb(
                 random.nextInt(256), // Alpha
@@ -19,11 +20,11 @@ fun genBitmapAlpha(width: Int, height: Int, progressPercent: MutableState<Float?
                 random.nextInt(256), // Green
                 random.nextInt(256)  // Blue
             )
-            bitmap.setPixel(x, y, randomColor)
+            bitmap[x, y] = randomColor
 
         }
         progress++
-        progressPercent.value = (progress.toFloat() / width)
+        mainScreenViewModel.updateProgressPercent(progress.toFloat() / mainScreenViewModel.width)
     }
     return bitmap
 }
